@@ -100,7 +100,7 @@ const register = (req, res) => {
                 }
             });
 
-            return res.json({ status: 'success', success: 'User has been registered! Please verify your email.' });
+            return res.json({ status: 'success', success: 'Please verify your email to confirm registration.' });
         })
     })
 }
