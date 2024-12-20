@@ -1,21 +1,28 @@
 const express = require('express');
-const db = require('./routes/db-config');
 const app = express();
+const authRoutes = require('./routes/auth');
+const db = require('./db-config');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const PORT = 5000;
-
-app.use('/js', express.static(__dirname + '/public/js'));
-app.use('/css', express.static(__dirname + '/public/css'));
-app.set('view engine', 'ejs');
-app.set('views', './views');
-app.use(cookieParser());
-app.use(express.json());
+const port = 3000;
 
 db.connect((err) => {
-    if(err) throw err;
-    // console.log('Database connected...');
+    if(err) {
+        console.log(err);
+    } else {
+        console.log('MySQL Connected!');
+    }
 })
-app.use('/', require('./routes/pages'));
-app.use('/api', require('./controllers/auth'));
 
-app.listen(PORT);
+app.use(express.json());
+app.use(cors());
+// app.use(cookieParser);   
+app.use('/api/auth', authRoutes);
+
+app.get('/', (req, res) => {
+    res.send('Hiii!');
+})
+
+app.listen(port, (req, res) => {
+    console.log(`Server is running at http://localhost:${port}`);
+});
