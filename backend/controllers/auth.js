@@ -2,6 +2,7 @@ const db = require('../db-config');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendMail = require('../utils/sendMail');
+const authenticateToken = require('../middleware/authMiddleware');
 
 const generateVerificationToken = () => {
     return Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
@@ -105,14 +106,50 @@ const register = (req, res) => {
     })
 }
 
+// const login = (req, res) => {
+//     const q = 'SELECT * FROM users WHERE email = ?';
+
+//     db.query(q, [req.body.email], (err, data) => {
+//         if(err) {
+//             return res.status(500).json(err);
+//         }
+//         if(data.length === 0) {
+//             return res.status(404).json('User not found!');
+//         }
+
+//         const user = data[0];
+
+//         const checkPassword = bcrypt.compareSync(req.body.password, user.password);
+
+//         if(!checkPassword) {
+//             return res.status(400).json('Incorrect email or password!');
+//         }
+
+//         const id = user.id;
+//         const token = jwt.sign({id}, process.env.JWT_SECRET, {
+//             expiresIn: process.env.JWT_EXPIRES_IN
+//         });
+
+//         console.log('Token : ' + token);
+//         const cookieOptions = {
+//             expires: new Date(
+//                 Date.now() + process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000
+//             ),
+//             httpOnly: true
+//         };
+
+//         const {password, ...others} = user;
+//         res.cookie('accessToken', token, cookieOptions).status(200).json(others);
+//     });
+// }
 const login = (req, res) => {
     const q = 'SELECT * FROM users WHERE email = ?';
 
     db.query(q, [req.body.email], (err, data) => {
-        if(err) {
+        if (err) {
             return res.status(500).json(err);
         }
-        if(data.length === 0) {
+        if (data.length === 0) {
             return res.status(404).json('User not found!');
         }
 
@@ -120,27 +157,34 @@ const login = (req, res) => {
 
         const checkPassword = bcrypt.compareSync(req.body.password, user.password);
 
-        if(!checkPassword) {
+        if (!checkPassword) {
             return res.status(400).json('Incorrect email or password!');
         }
 
+        // Generate token
         const id = user.id;
-        const token = jwt.sign({id}, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_EXPIRES_IN
+        const token = jwt.sign({ id }, process.env.JWT_SECRET, {
+            expiresIn: process.env.JWT_EXPIRES_IN || '1h', // Default to 1 hour if not set
         });
 
-        console.log('Token : ' + token);
+        console.log('Generated Token:', token); // Debugging
+
+        // Set token as a cookie
         const cookieOptions = {
             expires: new Date(
-                Date.now() + process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000
+                Date.now() + (process.env.JWT_COOKIE_EXPIRES || 1) * 24 * 60 * 60 * 1000 // Default 1 day
             ),
-            httpOnly: true
+            httpOnly: true, // Secure cookie
         };
 
-        const {password, ...others} = user;
-        res.cookie('accessToken', token, cookieOptions).status(200).json(others);
+        // Send only `id` and `token` in the response
+        res.cookie('accessToken', token, cookieOptions).status(200).json({
+            id: user.id,
+            token,
+        });
     });
-}
+};
+
 
 const logout = (req, res) => {
     res.clearCookie('accessToken', {
@@ -148,5 +192,4 @@ const logout = (req, res) => {
         sameSite: "none"
     }).status(200).json('User has been logged out!');
 }
-
 module.exports = { register, login, logout, verifyMail };
