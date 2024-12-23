@@ -8,6 +8,10 @@ const {
     verifyTicket,
     getAllTickets,
     getTicketbyId,
+    addCategory,
+    updateExistingCategory,
+    deleteCategory,
+    getAllCategory,
 } = require('../controllers/ticketController.js');
 
 // Protected routes
@@ -17,5 +21,9 @@ router.get('/tickets/:id', authenticateToken,getTicketbyId);
 router.put('/:id/status', authenticateToken, updateTicketStatus);
 //router.delete('/:id', authenticateToken, deleteTicket);
 router.post('/:id/verify', authenticateToken, verifyTicket);
+router.post('/categories', authenticateToken,addCategory);
+router.put('/categories/:id', authenticateToken,updateExistingCategory);
+router.delete('/categories/:id', authenticateToken,deleteCategory);
+router.get('/categories', authenticateToken,getAllCategory);
 
 module.exports = router;
