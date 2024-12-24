@@ -16,6 +16,10 @@ const {
     editComment,
     deleteComment,
     getAllCommentOnATicket,
+    upload,
+    uploadFile,
+    deleteFile,
+    getAllFiles,
 } = require('../controllers/ticketController.js');
 
 // Protected routes
@@ -35,4 +39,8 @@ router.post('/tickets/:ticket_id/comments', authenticateToken,addComment);
 router.put('/comments/:id', authenticateToken,editComment);
 router.delete('/comments/:id', authenticateToken,deleteComment);
 router.get('/tickets/:ticket_id/comments', authenticateToken,getAllCommentOnATicket);
+
+router.post('/upload', authenticateToken, upload.single('file'), uploadFile);
+router.delete('/files/:id', authenticateToken,deleteFile);
+router.get('/files/ticket/:ticket_id', authenticateToken,getAllFiles);
 module.exports = router;
