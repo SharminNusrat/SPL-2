@@ -20,6 +20,8 @@ const {
     uploadFile,
     deleteFile,
     getAllFiles,
+    technicianPerformance,
+    categoryBasedReport,
 } = require('../controllers/ticketController.js');
 
 // Protected routes
@@ -43,4 +45,7 @@ router.get('/tickets/:ticket_id/comments', authenticateToken,getAllCommentOnATic
 router.post('/upload', authenticateToken, upload.single('file'), uploadFile);
 router.delete('/files/:id', authenticateToken,deleteFile);
 router.get('/files/ticket/:ticket_id', authenticateToken,getAllFiles);
+
+router.get('/report/technician-performance',authenticateToken,technicianPerformance);
+router.get('/report/category-distribution',categoryBasedReport);
 module.exports = router;
