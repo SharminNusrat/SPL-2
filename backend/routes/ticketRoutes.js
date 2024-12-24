@@ -12,6 +12,10 @@ const {
     updateExistingCategory,
     deleteCategory,
     getAllCategory,
+    addComment,
+    editComment,
+    deleteComment,
+    getAllCommentOnATicket,
 } = require('../controllers/ticketController.js');
 
 // Protected routes
@@ -21,9 +25,14 @@ router.get('/tickets/:id', authenticateToken,getTicketbyId);
 router.put('/:id/status', authenticateToken, updateTicketStatus);
 //router.delete('/:id', authenticateToken, deleteTicket);
 router.post('/:id/verify', authenticateToken, verifyTicket);
+
 router.post('/categories', authenticateToken,addCategory);
 router.put('/categories/:id', authenticateToken,updateExistingCategory);
 router.delete('/categories/:id', authenticateToken,deleteCategory);
 router.get('/categories', authenticateToken,getAllCategory);
 
+router.post('/tickets/:ticket_id/comments', authenticateToken,addComment);
+router.put('/comments/:id', authenticateToken,editComment);
+router.delete('/comments/:id', authenticateToken,deleteComment);
+router.get('/tickets/:ticket_id/comments', authenticateToken,getAllCommentOnATicket);
 module.exports = router;
