@@ -22,6 +22,7 @@ const {
     getAllFiles,
     technicianPerformance,
     categoryBasedReport,
+    getTicketsByUser
 } = require('../controllers/ticketController.js');
 
 // Protected routes
@@ -31,6 +32,7 @@ router.get('/tickets/:id', authenticateToken,getTicketbyId);
 router.put('/:id/status', authenticateToken, updateTicketStatus);
 //router.delete('/:id', authenticateToken, deleteTicket);
 router.post('/:id/verify', authenticateToken, verifyTicket);
+router.get('/tickets', authenticateToken, getTicketsByUser);
 
 router.post('/categories', authenticateToken,addCategory);
 router.put('/categories/:id', authenticateToken,updateExistingCategory);

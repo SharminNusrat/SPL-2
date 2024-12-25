@@ -227,15 +227,39 @@ const getTicketbyId = (req, res) => {
         return res.status(200).json({ ticket: results[0] });
     });
 }
+const getTicketsByUser = (req, res) => {
+    const userId = req.user.id; // Extracted from the JWT token
+
+    // Check if the user is a ticket creator or assigned technician
+    const query = `
+        SELECT 
+            t.* 
+        FROM 
+            ticket t
+        WHERE 
+            t.user_id = ?
+            OR t.assigned_to = ? 
+    `;
+
+    db.query(query, [userId, userId], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        return res.status(200).json({ tickets: results });
+    });
+};
+
+
+//Category routes
 const addCategory = (req, res) => {
     const { name } = req.body;
 
-    // Validate input
     if (!name) {
         return res.status(400).json({ error: 'Category name is required.' });
     }
 
-    // Insert category into database
     const insertQuery = `INSERT INTO category (name) VALUES (?)`;
 
     db.query(insertQuery, [name], (err, result) => {
@@ -631,4 +655,4 @@ const categoryBasedReport= (req, res) => {
 };
 module.exports = {createTicket,updateTicketStatus,verifyTicket,getAllTickets, getTicketbyId,
     addCategory,updateExistingCategory,deleteCategory,getAllCategory,addComment,editComment,deleteComment,getAllCommentOnATicket,upload,
-    uploadFile, deleteFile,getAllFiles,technicianPerformance,categoryBasedReport};
+    uploadFile, deleteFile,getAllFiles,technicianPerformance,categoryBasedReport,getTicketsByUser};
