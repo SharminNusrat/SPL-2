@@ -8,12 +8,69 @@ const generateVerificationToken = () => {
     return Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
 };
 
-const verifyMail = (req, res) => {
-    const {email, otp} = req.body;
+const saveUserDetails = (req, res) => {
+    const { userId, roleData, role } = req.body;
+    console.log(userId)
 
-    if(!email || !otp) {
+    if (!userId || !roleData || !role) {
+        return res.status(400).json({
+            status: 'error',
+            error: 'User ID, role, and role-specific data are required'
+        });
+    }
+
+    const q = 'INSERT INTO user_details (`user_id`, `details_key`, `details_value`) VALUES ?';
+
+    const values = Object.entries(roleData).map(([key, value]) => [userId, key, value]);
+
+    db.query(q, [values], (err, data) => {
+        if (err) {
+            return res.status(500).json({
+                status: 'error',
+                error: 'Failed to save data.'
+            });
+        }
+
+        let mailSubject = 'Email Verification OTP';
+        const verificationToken = generateVerificationToken();
+        let content = `Your OTP code is: ${verificationToken}`;
+
+        db.query('SELECT email FROM users WHERE id = ?', [userId], (err, data) => {
+            if (err || data.length === 0) {
+                return res.status(500).json({
+                    status: 'error',
+                    error: 'Failed to fetch user email.',
+                });
+            }
+
+            const email = data[0].email;
+            console.log(email)
+            sendMail(email, mailSubject, content);
+
+            const q = 'UPDATE users SET verification_token=? WHERE id=?';
+            db.query(q, [verificationToken, userId], (err) => {
+                if (err) {
+                    return res.status(500).json({
+                        status: 'error',
+                        error: 'Failed to update verification token.'
+                    });
+                }
+
+                return res.status(200).json({
+                    status: 'success',
+                    success: 'Data saved successfully! Please verify your email to confirm registration.'
+                });
+            });
+        });
+    });
+};
+
+const verifyMail = (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
         return res.json({
-            status: 'error', 
+            status: 'error',
             error: 'Please provide both email and OTP'
         });
     }
@@ -21,21 +78,21 @@ const verifyMail = (req, res) => {
     const q = 'SELECT * FROM users WHERE email = ?';
 
     db.query(q, [email], (err, data) => {
-        if(err) {
+        if (err) {
             console.log(err);
         }
-        if(!data[0]) {
+        if (!data[0]) {
             return res.json({
-                status: 'error', 
+                status: 'error',
                 error: 'Email not found'
             });
         }
 
         const user = data[0];
-        if(user.verification_token === otp) {
+        if (user.verification_token === otp) {
             const q = 'UPDATE users SET is_verified = 1 WHERE email = ?';
             db.query(q, [email], (err, updatedData) => {
-                if(err) {
+                if (err) {
                     console.log(err);
                 }
                 return res.json({
@@ -44,21 +101,28 @@ const verifyMail = (req, res) => {
                 });
             });
         }
+
         else {
-            const q = 'DELETE FROM users WHERE email = ?';
-            db.query(q, [email], (err, result) => {
-                if(err) {
-                    console.log(err);
-                    return res.status(500).json({
-                        error: 'Failed to delete unverified user'
-                    });
-                }
-                return res.status(400).json({
-                    status: 'error',
-                    error: 'Incorrect OTP!'
-                });
+            return res.status(400).json({
+                status: 'error',
+                error: 'Incorrect OTP!'
             });
         }
+        // else {
+        //     const q = 'DELETE FROM users WHERE email = ?';
+        //     db.query(q, [email], (err, result) => {
+        //         if (err) {
+        //             console.log(err);
+        //             return res.status(500).json({
+        //                 error: 'Failed to delete unverified user'
+        //             });
+        //         }
+        //         return res.status(400).json({
+        //             status: 'error',
+        //             error: 'Incorrect OTP!'
+        //         });
+        //     });
+        // }
     });
 }
 
@@ -87,21 +151,9 @@ const register = (req, res) => {
                 return res.status(500).json(err);
             }
 
-            let mailSubject = 'Email Verification OTP';
-            const verificationToken = generateVerificationToken();
-            let content = `Your OTP code is: ${verificationToken}`;
-            sendMail(req.body.email, mailSubject, content);
+            //const userId = result.insertId;
 
-            const q = 'UPDATE users SET verification_token=? WHERE email=?';
-            db.query(q, [verificationToken, req.body.email], (err, result) => {
-                if(err) {
-                    return res.status(500).send({
-                        message: err
-                    });
-                }
-            });
-
-            return res.json({ status: 'success', success: 'Please verify your email to confirm registration.' });
+            return res.json({ status: 'success', success: 'Data saved successfully!' });
         })
     })
 }
@@ -192,4 +244,4 @@ const logout = (req, res) => {
         sameSite: "none"
     }).status(200).json('User has been logged out!');
 }
-module.exports = { register, login, logout, verifyMail };
+module.exports = { register, login, logout, verifyMail, saveUserDetails };
