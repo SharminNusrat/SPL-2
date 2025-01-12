@@ -90,10 +90,14 @@ const verifyMail = (req, res) => {
 
         const user = data[0];
         if (user.verification_token === otp) {
-            const q = 'UPDATE users SET is_verified = 1 WHERE email = ?';
+            const q = 'UPDATE users SET is_verified = 1, verification_token = NULL WHERE email = ?';
             db.query(q, [email], (err, updatedData) => {
                 if (err) {
                     console.log(err);
+                    return res.status(500).json({
+                        status: 'error',
+                        error: 'Failed to update user data'
+                    });
                 }
                 return res.json({
                     status: 'success',
@@ -124,7 +128,97 @@ const verifyMail = (req, res) => {
         //     });
         // }
     });
-}
+};
+
+const generateRecoveryOTP = (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({
+            status: 'error',
+            error: 'Email is required'
+        });
+    }
+
+    const q = 'SELECT * FROM users WHERE email = ?';
+    db.query(q, [email], (err, data) => {
+        if (err) {
+            return res.status(500).json(err);
+        }
+        if (data.length === 0) {
+            return res.status(404).json({
+                status: 'error',
+                error: 'User not found!'
+            });
+        }
+
+        const resetOTP = generateVerificationToken();
+        const q = 'UPDATE users SET verification_token = ? WHERE email = ?';
+
+        db.query(q, [resetOTP, email], (err) => {
+            if (err) {
+                return res.status(500).json({
+                    status: 'error',
+                    error: 'Failed to generate password reset token.',
+                });
+            }
+
+            const mailSubject = 'Password Recovery OTP';
+            const content = `Your password reset OTP is: ${resetOTP}`;
+            sendMail(email, mailSubject, content);
+
+            return res.status(200).json({
+                status: 'success',
+                success: 'Password reset OTP sent to your email.'
+            });
+        });
+    });
+};
+
+const resetPassword = (req, res) => {
+    const {email, otp, newPassword} = req.body;
+
+    const q = 'SELECT * FROM users WHERE email = ?';
+    db.query(q, [email], (err, data) => {
+        if (err) {
+            return res.status(500).json(err);
+        }
+        if (data.length === 0) {
+            return res.status(404).json({
+                status: 'error',
+                error: 'User not found!',
+            });
+        }
+
+        const user = data[0];
+        if(user.verification_token !== otp) {
+            return res.status(400).json({
+                status: 'error',
+                error: 'Invalid OTP',
+            });
+        }
+
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(newPassword, salt);
+        console.log(hashedPassword);
+
+        const q = 'UPDATE users SET password = ?, verification_token = NULL WHERE email = ?';
+
+        db.query(q, [hashedPassword, email], (err) => {
+            if (err) {
+                return res.status(500).json({
+                    status: 'error',
+                    error: 'Failed to reset password.',
+                });
+            }
+
+            return res.status(200).json({
+                status: 'success',
+                success: 'Password reset successfully'
+            });
+        });
+    });
+};
 
 const register = (req, res) => {
 
@@ -156,7 +250,7 @@ const register = (req, res) => {
             return res.json({ status: 'success', success: 'Data saved successfully!' });
         })
     })
-}
+};
 
 // const login = (req, res) => {
 //     const q = 'SELECT * FROM users WHERE email = ?';
@@ -194,6 +288,7 @@ const register = (req, res) => {
 //         res.cookie('accessToken', token, cookieOptions).status(200).json(others);
 //     });
 // }
+
 const login = (req, res) => {
     const q = 'SELECT * FROM users WHERE email = ?';
 
@@ -237,11 +332,11 @@ const login = (req, res) => {
     });
 };
 
-
 const logout = (req, res) => {
     res.clearCookie('accessToken', {
         secure: true,
         sameSite: "none"
     }).status(200).json('User has been logged out!');
-}
-module.exports = { register, login, logout, verifyMail, saveUserDetails };
+};
+
+module.exports = { register, login, logout, verifyMail, saveUserDetails, generateRecoveryOTP, resetPassword };
