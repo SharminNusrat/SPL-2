@@ -8,6 +8,127 @@ const generateVerificationToken = () => {
     return Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
 };
 
+const getProfile = (req, res) => {
+    const userId = req.user.id;
+
+    const q = 'SELECT id, fname, lname, phn_no, email FROM users WHERE id = ?';
+
+    db.query(q, [userId], (err, data) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({
+                status: 'error',
+                error: 'Failed to fetch user data'
+            });
+        }
+
+        if (data.length === 0) {
+            return res.status(404).json({
+                status: 'error',
+                error: 'User not found!'
+            });
+        }
+
+        const user = data[0];
+        const q = 'SELECT details_key, details_value FROM user_details WHERE user_id = ?';
+
+        db.query(q, [userId], (err, roleData) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({
+                    status: 'error',
+                    error: 'Failed to fetch role specific data'
+                });
+            }
+
+            const roleSpecificData = {};
+            roleData.forEach((item) => {
+                roleSpecificData[item.details_key] = item.details_value;
+            });
+
+            return res.status(200).json({
+                status: 'success',
+                profile: {
+                    ...user,
+                    roleData: roleSpecificData
+                }
+            });
+        });
+    });
+};
+
+const updateProfile = (req, res) => {
+    const userId = req.user.id;
+    const { fname, lname, phn_no, roleData } = req.body;
+
+    const updateBasicInfo = () => {
+        return new Promise((resolve, reject) => {
+
+            const basicInfo = [];
+            const basicValues = [];
+            if (fname) {
+                basicInfo.push('fname = ?');
+                basicValues.push(fname);
+            }
+            if (lname) {
+                basicInfo.push('lname = ?');
+                basicValues.push(lname);
+            }
+            if (phn_no) {
+                basicInfo.push('phn_no = ?');
+                basicValues.push(phn_no);
+            }
+
+            const q = `UPDATE users SET ${basicInfo.join(', ')} WHERE id = ?`;
+            basicValues.push(userId);
+
+            db.query(q, basicValues, (err, data) => {
+                if (err) {
+                    return reject('Failed to update basic profile information');
+                }
+                resolve();
+            });
+        });
+    };
+
+    const updateSpecificInfo = () => {
+        return new Promise((resolve, reject) => {
+            const updateInfo = Object.entries(roleData).map(([key, value]) => {
+                return new Promise((resolve, reject) => {
+                    const q = `UPDATE user_details SET details_value = ? WHERE user_id = ? AND details_key = ?`;
+
+                    db.query(q, [value, userId, key], (err, result) => {
+                        if (err) {
+                            console.error(`Error updating ${key}:`, err);
+                            return reject(`Failed to update ${key}`);
+                        }
+                        resolve();
+                    });
+                });
+            });
+
+            Promise.all(updateInfo)
+                .then(() => resolve())
+                .catch((error) => reject(error));
+        });
+    };
+
+    Promise.all([updateBasicInfo(), updateSpecificInfo()])
+        .then(() => {
+            return res.status(200).json({
+                status: 'success',
+                success: 'Profile updated successfully!'
+            });
+        })
+        .catch((error) => {
+            console.error('Profile update error:', error);
+            return res.status(500).json({
+                status: 'error',
+                error
+            });
+        });
+};
+
 const saveUserDetails = (req, res) => {
     const { userId, roleData, role } = req.body;
     console.log(userId)
@@ -176,7 +297,7 @@ const generateRecoveryOTP = (req, res) => {
 };
 
 const resetPassword = (req, res) => {
-    const {email, otp, newPassword} = req.body;
+    const { email, otp, newPassword } = req.body;
 
     const q = 'SELECT * FROM users WHERE email = ?';
     db.query(q, [email], (err, data) => {
@@ -191,7 +312,7 @@ const resetPassword = (req, res) => {
         }
 
         const user = data[0];
-        if(user.verification_token !== otp) {
+        if (user.verification_token !== otp) {
             return res.status(400).json({
                 status: 'error',
                 error: 'Invalid OTP',
@@ -339,4 +460,4 @@ const logout = (req, res) => {
     }).status(200).json('User has been logged out!');
 };
 
-module.exports = { register, login, logout, verifyMail, saveUserDetails, generateRecoveryOTP, resetPassword };
+module.exports = { register, login, logout, verifyMail, saveUserDetails, generateRecoveryOTP, resetPassword, getProfile, updateProfile };
