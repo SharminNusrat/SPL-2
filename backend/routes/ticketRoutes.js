@@ -2,31 +2,44 @@ const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middleware/authMiddleware'); // Import the middleware
 
+
 const {
     createTicket,
     updateTicketStatus,
     verifyTicket,
     getAllTickets,
     getTicketbyId,
+    getTicketsByUser
+} = require('../controllers/ticketController.js');
+
+const {
     addCategory,
     updateExistingCategory,
     deleteCategory,
     getAllCategory,
+} = require('../controllers/categoryController.js');
+
+const {
     addComment,
     editComment,
     deleteComment,
     getAllCommentOnATicket,
+} = require('../controllers/commentController.js');
+
+const {
     upload,
     uploadFile,
     deleteFile,
     getAllFiles,
+} = require('../controllers/fileController.js');
+
+const {
     technicianPerformance,
     categoryBasedReport,
-    getTicketsByUser
-} = require('../controllers/ticketController.js');
+} = require('../controllers/reportController.js');
 
 // Protected routes
-router.post('/', authenticateToken, createTicket);
+router.post('/ticket', authenticateToken, createTicket);
 router.get('/tickets', authenticateToken, getAllTickets);
 router.get('/tickets/:id', authenticateToken,getTicketbyId);
 router.put('/:id/status', authenticateToken, updateTicketStatus);

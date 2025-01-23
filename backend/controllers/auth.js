@@ -373,43 +373,6 @@ const register = (req, res) => {
     })
 };
 
-// const login = (req, res) => {
-//     const q = 'SELECT * FROM users WHERE email = ?';
-
-//     db.query(q, [req.body.email], (err, data) => {
-//         if(err) {
-//             return res.status(500).json(err);
-//         }
-//         if(data.length === 0) {
-//             return res.status(404).json('User not found!');
-//         }
-
-//         const user = data[0];
-
-//         const checkPassword = bcrypt.compareSync(req.body.password, user.password);
-
-//         if(!checkPassword) {
-//             return res.status(400).json('Incorrect email or password!');
-//         }
-
-//         const id = user.id;
-//         const token = jwt.sign({id}, process.env.JWT_SECRET, {
-//             expiresIn: process.env.JWT_EXPIRES_IN
-//         });
-
-//         console.log('Token : ' + token);
-//         const cookieOptions = {
-//             expires: new Date(
-//                 Date.now() + process.env.JWT_COOKIE_EXPIRES * 24 * 60 * 60 * 1000
-//             ),
-//             httpOnly: true
-//         };
-
-//         const {password, ...others} = user;
-//         res.cookie('accessToken', token, cookieOptions).status(200).json(others);
-//     });
-// }
-
 const login = (req, res) => {
     const q = 'SELECT * FROM users WHERE email = ?';
 
