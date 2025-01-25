@@ -1,144 +1,222 @@
 <template>
-  <div class="register container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-header bg-primary text-white text-center">
-            <h2>Register</h2>
-          </div>
-          <div class="card-body">
-            <form @submit.prevent="handleRegister">
-              <!-- First Name -->
-              <div class="mb-3">
-                <label for="fname" class="form-label">First Name</label>
-                <input
-                  id="fname"
-                  v-model="fname"
-                  type="text"
-                  class="form-control"
-                  placeholder="Enter your first name"
-                  required
-                />
-              </div>
+  <div class="registration-page">
+    <h2>Registration</h2>
 
-              <!-- Last Name -->
-              <div class="mb-3">
-                <label for="lname" class="form-label">Last Name</label>
-                <input
-                  id="lname"
-                  v-model="lname"
-                  type="text"
-                  class="form-control"
-                  placeholder="Enter your last name"
-                  required
-                />
-              </div>
+    <form @submit.prevent="handleSubmit">
+      <div class="form-group">
+        <label for="fname">First Name</label>
+        <input
+          type="text"
+          id="name"
+          v-model="formData.fname"
+          placeholder="Enter your first name"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="lname">Last Name</label>
+        <input
+          type="text"
+          id="name"
+          v-model="formData.lname"
+          placeholder="Enter your last name"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="phn_no">Phone Number</label>
+        <input
+          type="text"
+          id="name"
+          v-model="formData.phn_no"
+          placeholder="Enter your phone number"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          v-model="formData.email"
+          placeholder="Enter your email"
+          required
+        />
+      </div>
 
-              <!-- Phone Number -->
-              <div class="mb-3">
-                <label for="phn_no" class="form-label">Phone Number</label>
-                <input
-                  id="phn_no"
-                  v-model="phn_no"
-                  type="text"
-                  class="form-control"
-                  placeholder="Enter your phone number"
-                  required
-                />
-              </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          v-model="formData.password"
+          placeholder="Enter your password"
+          required
+        />
+      </div>
 
-              <!-- Email -->
-              <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input
-                  id="email"
-                  v-model="email"
-                  type="email"
-                  class="form-control"
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role" v-model="formData.role" @change="handleRoleChange" required>
+          <option value="">Select your role</option>
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+          <option value="technician">Technician</option>
+        </select>
+      </div>
 
-              <!-- Password -->
-              <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input
-                  id="password"
-                  v-model="password"
-                  type="password"
-                  class="form-control"
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
+      <!-- Conditional Fields for Student -->
+      <div v-if="formData.role === 'student'">
+        <div class="form-group">
+          <label for="roll">Roll</label>
+          <input
+            type="text"
+            id="roll"
+            v-model="formData.roleData.roll"
+            placeholder="Enter your roll number"
+            required
+          />
+        </div>
 
-              <!-- Role -->
-              <div class="mb-3">
-                <label for="role" class="form-label">Role</label>
-                <input
-                  id="role"
-                  v-model="role"
-                  type="text"
-                  class="form-control"
-                  placeholder="Enter your role"
-                  required
-                />
-              </div>
+        <div class="form-group">
+          <label for="registration">Registration Number</label>
+          <input
+            type="text"
+            id="registration"
+            v-model="formData.roleData.registration"
+            placeholder="Enter your registration number"
+            required
+          />
+        </div>
 
-              <!-- Submit Button -->
-              <div class="d-grid">
-                <button type="submit" class="btn btn-primary">Register</button>
-              </div>
-            </form>
-          </div>
-          <div class="card-footer text-center">
-            <p>Already have an account? <router-link to="/login">Login</router-link></p>
-          </div>
+        <div class="form-group">
+          <label for="batch">Batch</label>
+          <input
+            type="text"
+            id="batch"
+            v-model="formData.roleData.batch"
+            placeholder="Enter your batch"
+            required
+          />
         </div>
       </div>
-    </div>
+
+      <!-- Conditional Fields for Teacher -->
+      <div v-if="formData.role === 'teacher'">
+        <div class="form-group">
+          <label for="designation">Designation</label>
+          <input
+            type="text"
+            id="designation"
+            v-model="formData.roleData.designation"
+            placeholder="Enter your designation"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Conditional Fields for Technician -->
+      <div v-if="formData.role === 'technician'">
+        <div class="form-group">
+          <label for="expertise">Expertise</label>
+          <select id="expertise" v-model="formData.roleData.expertise" required>
+            <option value="">Select your expertise</option>
+            <option value="hardware">Hardware</option>
+            <option value="software">Software</option>
+            <option value="networking">Networking</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit">Register</button>
+    </form>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
   data() {
     return {
-      fname: '',
-      lname: '',
-      phn_no: '',
-      email: '',
-      password: '',
-      role: '',
+      formData: {
+        name: "",
+        email: "",
+        password: "",
+        role: "",
+        roleData: {},
+      },
     };
   },
   methods: {
-    async handleRegister() {
+    handleRoleChange() {
+      // Reset role-specific data when role changes
+      this.formData.roleData = {};
+    },
+    async handleSubmit() {
       try {
-        const res = await axios.post('/api/auth/register', {
-          fname: this.fname,
-          lname: this.lname,
-          phn_no: this.phn_no,
-          email: this.email,
-          password: this.password,
-          role: this.role,
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(this.formData),
         });
-        alert(res.data.success);
-        this.$router.push('/verify-email'); // Redirect to email verification page
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+          alert("Registration successful! Please check your email to verify.");
+        } else {
+          alert(result.error || "An error occurred during registration.");
+        }
       } catch (error) {
-        console.error(error.response.data);
-        alert('Registration failed. Please try again.');
+        console.error("Error during registration:", error);
+        alert("Failed to register. Please try again later.");
       }
     },
   },
 };
 </script>
 
-<style>
-.register {
-  margin-top: 50px;
+<style scoped>
+.registration-page {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
 }
 </style>
