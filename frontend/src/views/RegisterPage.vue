@@ -192,6 +192,7 @@ export default {
 }
 
 label {
+
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
