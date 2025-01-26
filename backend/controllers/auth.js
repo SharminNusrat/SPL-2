@@ -129,63 +129,6 @@ const updateProfile = (req, res) => {
         });
 };
 
-const saveUserDetails = (req, res) => {
-    const { userId, roleData, role } = req.body;
-    console.log(userId)
-
-    if (!userId || !roleData || !role) {
-        return res.status(400).json({
-            status: 'error',
-            error: 'User ID, role, and role-specific data are required'
-        });
-    }
-
-    const q = 'INSERT INTO user_details (`user_id`, `details_key`, `details_value`) VALUES ?';
-
-    const values = Object.entries(roleData).map(([key, value]) => [userId, key, value]);
-
-    db.query(q, [values], (err, data) => {
-        if (err) {
-            return res.status(500).json({
-                status: 'error',
-                error: 'Failed to save data.'
-            });
-        }
-
-        let mailSubject = 'Email Verification OTP';
-        const verificationToken = generateVerificationToken();
-        let content = `Your OTP code is: ${verificationToken}`;
-
-        db.query('SELECT email FROM users WHERE id = ?', [userId], (err, data) => {
-            if (err || data.length === 0) {
-                return res.status(500).json({
-                    status: 'error',
-                    error: 'Failed to fetch user email.',
-                });
-            }
-
-            const email = data[0].email;
-            console.log(email)
-            sendMail(email, mailSubject, content);
-
-            const q = 'UPDATE users SET verification_token=? WHERE id=?';
-            db.query(q, [verificationToken, userId], (err) => {
-                if (err) {
-                    return res.status(500).json({
-                        status: 'error',
-                        error: 'Failed to update verification token.'
-                    });
-                }
-
-                return res.status(200).json({
-                    status: 'success',
-                    success: 'Data saved successfully! Please verify your email to confirm registration.'
-                });
-            });
-        });
-    });
-};
-
 const verifyMail = (req, res) => {
     const { email, otp } = req.body;
 
@@ -341,37 +284,101 @@ const resetPassword = (req, res) => {
     });
 };
 
-const register = (req, res) => {
+const register = async (req, res) => {
+    const { fname, lname, email, phn_no, password, role, roleData } = req.body;
 
-    //Check if user exists
-    const q = 'SELECT * FROM users WHERE email = ?';
-    db.query(q, [req.body.email], (err, data) => {
+    if (!fname || !lname || !email || !phn_no || !password || !role) {
+        return res.status(400).json({
+            status: 'error',
+            error: 'All fields are required!',
+        });
+    }
+
+    const qCheck = 'SELECT * FROM users WHERE email = ?';
+    db.query(qCheck, [email], (err, data) => {
         if (err) {
             return res.status(500).json(err);
         }
         if (data.length) {
-            return res.status(409).json('User already exists!');
+            return res.status(409).json({ status: 'error', error: 'User already exists!' });
         }
 
-        //Create a new User
         const salt = bcrypt.genSaltSync(10);
-        const hashedPassword = bcrypt.hashSync(req.body.password, salt);
+        const hashedPassword = bcrypt.hashSync(password, salt);
 
-        const q = 'INSERT INTO users (`fname`, `lname`, `phn_no`, `email`, `password`, `role`) VALUE (?)';
+        const qInsertUser = 'INSERT INTO users (`fname`, `lname`, `phn_no`, `email`, `password`, `role`) VALUE (?)';
+        const userValues = [fname, lname, phn_no, email, hashedPassword, role];
 
-        const values = [req.body.fname, req.body.lname, req.body.phn_no, req.body.email, hashedPassword, req.body.role];
-
-        db.query(q, [values], (err, data) => {
+        db.query(qInsertUser, [userValues], (err, result) => {
             if (err) {
                 return res.status(500).json(err);
             }
 
-            //const userId = result.insertId;
+            const userId = result.insertId;
 
-            return res.json({ status: 'success', success: 'Data saved successfully!' });
-        })
-    })
-};
+            if (roleData && Object.keys(roleData).length > 0) {
+                const qInsertRoleData = 'INSERT INTO user_details (`user_id`, `details_key`, `details_value`) VALUES ?';
+                const roleDataValues = Object.entries(roleData).map(([key, value]) => [
+                    userId,
+                    key,
+                    value,
+                ]);
+
+                db.query(qInsertRoleData, [roleDataValues], (err) => {
+                    if (err) {
+                        return res.status(500).json({
+                            status: 'error',
+                            error: 'Failed to save role-specific data.',
+                        });
+                    }
+
+                    const verificationToken = generateVerificationToken();
+                    const qUpdateUser = 'UPDATE users SET verification_token = ? WHERE id = ?';
+
+                    db.query(qUpdateUser, [verificationToken, userId], (err) => {
+                        if (err) {
+                            return res.status(500).json({
+                                status: 'error',
+                                error: 'Failed to save verification token.',
+                            });
+                        }
+
+                        const mailSubject = 'Email Verification OTP';
+                        const content = `Your OTP code is: ${verificationToken}`;
+                        sendMail(email, mailSubject, content);
+
+                        return res.status(200).json({
+                            status: 'success',
+                            success: 'User registered successfully! Please verify your email.',
+                        });
+                    });
+                });
+            }
+            else {
+                const verificationToken = generateVerificationToken();
+                const qUpdateUser = 'UPDATE users SET verification_token = ? WHERE id = ?';
+
+                db.query(qUpdateUser, [verificationToken, userId], (err) => {
+                    if (err) {
+                        return res.status(500).json({
+                            status: 'error',
+                            error: 'Failed to save verification token.',
+                        });
+                    }
+
+                    const mailSubject = 'Email Verification OTP';
+                    const content = `Your OTP code is: ${verificationToken}`;
+                    sendMail(email, mailSubject, content);
+
+                    return res.status(200).json({
+                        status: 'success',
+                        success: 'User registered successfully! Please verify your email.',
+                    });
+                });
+            }
+        });
+    });
+}
 
 const login = (req, res) => {
     const q = 'SELECT * FROM users WHERE email = ?';
@@ -423,4 +430,4 @@ const logout = (req, res) => {
     }).status(200).json('User has been logged out!');
 };
 
-module.exports = { register, login, logout, verifyMail, saveUserDetails, generateRecoveryOTP, resetPassword, getProfile, updateProfile };
+module.exports = { register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getProfile, updateProfile };
