@@ -53,7 +53,7 @@ export default {
   methods: {
     async handleLogin() {
       try {
-        const res = await axios.post("/api/auth/login", {
+        const res = await axios.post("/api/user/login", {
           email: this.email,
           password: this.password,
         },
