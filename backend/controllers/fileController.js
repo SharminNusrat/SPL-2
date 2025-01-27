@@ -4,8 +4,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authenticateToken = require('../middleware/authMiddleware');
 
-//file api
-//add file
 const multer = require('multer');
 const path = require('path');
 
@@ -38,9 +36,8 @@ const uploadFile = async (req, res) => {
     try {
         const { ticket_id } = req.body;
         const uploaded_at = new Date();
-        const user_id = req.user.id; // User ID from the JWT
+        const user_id = req.user.id; 
 
-        // Check if file is uploaded
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded.' });
         }
@@ -48,7 +45,6 @@ const uploadFile = async (req, res) => {
         const filePath = req.file.path;
         const fileType = req.file.mimetype;
 
-        // Insert file details into the database
         if (!ticket_id) {
             return res.status(400).json({ error: 'ticket_id is required.' });
         }
@@ -76,13 +72,11 @@ const uploadFile = async (req, res) => {
     }
 };
 
-//deete file
 const fs = require('fs');
 
 const deleteFile= (req, res) => {
     const { id } = req.params;
 
-    // Get the file path to delete the physical file
     const getPathQuery = `SELECT path FROM file WHERE id = ?`;
 
     db.query(getPathQuery, [id], (err, results) => {
@@ -97,14 +91,12 @@ const deleteFile= (req, res) => {
 
         const filePath = results[0].path;
 
-        // Delete the physical file
         fs.unlink(filePath, (unlinkErr) => {
             if (unlinkErr) {
                 console.error('Error deleting file from storage:', unlinkErr);
                 return res.status(500).json({ error: 'Error deleting file from storage.' });
             }
 
-            // Delete file entry from the database
             const deleteQuery = `DELETE FROM file WHERE id = ?`;
 
             db.query(deleteQuery, [id], (deleteErr) => {

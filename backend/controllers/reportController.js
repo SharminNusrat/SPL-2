@@ -3,8 +3,7 @@ const db = require('../db-config');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authenticateToken = require('../middleware/authMiddleware');
-//Report
-// 1. Technician Performance Report
+
 const technicianPerformance= (req, res) => {
     const query = `
        SELECT 
@@ -34,7 +33,6 @@ GROUP BY
     });
 };
 
-// 2. Category-Based Report
 const categoryBasedReport= (req, res) => {
     const totalQuery = `SELECT COUNT(*) AS total_tickets FROM ticket`;
     const categoryQuery = `
@@ -50,22 +48,17 @@ const categoryBasedReport= (req, res) => {
             c.id, c.name
     `;
 
-    // First, get the total number of tickets
     db.query(totalQuery, (err, totalResult) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Database error fetching total tickets.' });
         }
         const totalTickets = totalResult[0].total_tickets;
-
-        // Get category-wise counts
         db.query(categoryQuery, (err, categoryResults) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ error: 'Database error fetching category report.' });
             }
-
-            // Calculate percentage for each category
             const report = categoryResults.map(category => ({
                 category_id: category.category_id,
                 category_name: category.category_name,

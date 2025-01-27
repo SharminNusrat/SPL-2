@@ -5,14 +5,11 @@ const jwt = require('jsonwebtoken');
 const sendMail = require('../utils/sendMail');
 const authenticateToken = require('../middleware/authMiddleware');
 
-// Create Ticket API
 const createTicket = (req, res) => {
     const { category_id, computer_id, title, roomNumber, description } = req.body;
-    const user_id = req.user.id; // Extract user_id from the JWT payload
+    const user_id = req.user.id; 
     const ticket_status = 'Open';
     const created_at = new Date();
-
-    // Validate required fields
     if (!category_id || !computer_id || !title || !roomNumber || !description) {
         return res.status(400).json({ error: 'All fields are required.' });
     }
@@ -63,7 +60,6 @@ LIMIT 1;
 
         const assigned_to = results[0].id;
 
-        // Step 2: Insert the New Ticket
         const insertTicketQuery = `
             INSERT INTO ticket (user_id, category_id, computer_id, title, roomNumber, description, ticket_status, created_at, assigned_to)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -78,7 +74,6 @@ LIMIT 1;
                     return res.status(500).json({ error: 'Database error while creating ticket.' });
                 }
 
-                // Step 3: Update Technician's Last Assigned Timestamp
                 const updateLastAssignedQuery = `
                     INSERT INTO user_details (user_id, details_key, details_value)
                     VALUES (?, 'last_assigned_at', NOW())
@@ -102,7 +97,6 @@ LIMIT 1;
     });
 };
 
-// Update Ticket Status
 const updateTicketStatus = (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
@@ -137,7 +131,6 @@ const updateTicketStatus = (req, res) => {
 
                 const email = emailResults[0].email;
 
-                // Send email using the sendMail function from sendmail.js
                 const mailSubject = 'Ticket Verification Code';
                 const content = `Your verification code to close the ticket #${id} is: ${verificationCode}`;
 
@@ -161,12 +154,10 @@ const updateTicketStatus = (req, res) => {
     });
 };
 
-// Verify Code and Close Ticket
 const verifyTicket= (req, res) => {
     const { id } = req.params;
     const { code } = req.body;
 
-    // Step 1: Fetch ticket and check the verification code
     const fetchQuery = `SELECT verification_code FROM ticket WHERE id = ?`;
 
     db.query(fetchQuery, [id], (fetchErr, results) => {
@@ -180,13 +171,10 @@ const verifyTicket= (req, res) => {
         }
 
         const { verification_code } = results[0];
-
-        // Step 2: Compare the provided code with the stored code
         if (verification_code !== code) {
             return res.status(400).json({ error: 'Invalid verification code.' });
         }
 
-        // Step 3: Update ticket status to Closed
         const updateQuery = `UPDATE ticket SET ticket_status = 'Closed', verification_code = NULL WHERE id = ?`;
 
         db.query(updateQuery, [id], (updateErr) => {
@@ -228,9 +216,8 @@ const getTicketbyId = (req, res) => {
     });
 }
 const getTicketsByUser = (req, res) => {
-    const userId = req.user.id; // Extracted from the JWT token
+    const userId = req.user.id; 
 
-    // Check if the user is a ticket creator or assigned technician
     const query = `
         SELECT 
             t.* 

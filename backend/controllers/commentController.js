@@ -3,7 +3,7 @@ const db = require('../db-config');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authenticateToken = require('../middleware/authMiddleware');
-//comment 
+
 const addComment = (req, res) => {
     const { ticket_id } = req.params;
     const { content } = req.body;
@@ -26,7 +26,7 @@ const addComment = (req, res) => {
         });
     });
 };
-// 2. Edit a Comment (PUT)
+
 const editComment= (req, res) => {
     const { id } = req.params;
     const { content } = req.body;
@@ -36,7 +36,6 @@ const editComment= (req, res) => {
         return res.status(400).json({ error: 'Updated comment content is required.' });
     }
 
-    // Update the comment only if the user owns the comment
     const query = `UPDATE comment SET content = ? WHERE id = ? AND user_id = ?`;
 
     db.query(query, [content, id, user_id], (err, result) => {
@@ -55,12 +54,10 @@ const editComment= (req, res) => {
     });
 };
 
-// 3. Delete a Comment (DELETE)
 const deleteComment= (req, res) => {
     const { id } = req.params;
     const user_id = req.user.id; 
 
-    // Delete comment only if the user owns the comment
     const query = `DELETE FROM comment WHERE id = ? AND user_id = ?`;
 
     db.query(query, [id, user_id], (err, result) => {
@@ -79,7 +76,6 @@ const deleteComment= (req, res) => {
     });
 };
 
-// 4. Get All Comments for a Ticket (GET)
 const getAllCommentOnATicket= (req, res) => {
     const { ticket_id } = req.params;
 

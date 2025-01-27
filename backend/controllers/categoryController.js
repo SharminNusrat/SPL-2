@@ -3,7 +3,7 @@ const db = require('../db-config');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authenticateToken = require('../middleware/authMiddleware');
-//Category routes
+
 const addCategory = (req, res) => {
     const { name } = req.body;
 
@@ -26,7 +26,7 @@ const addCategory = (req, res) => {
         });
     });
 };
-// 2. Update an Existing Category (PUT)
+
 const updateExistingCategory = (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
@@ -55,7 +55,6 @@ const updateExistingCategory = (req, res) => {
     });
 };
 
-// 3. Delete a Category (DELETE)
 const deleteCategory = (req, res) => {
     const { id } = req.params;
 
@@ -78,7 +77,6 @@ const deleteCategory = (req, res) => {
     });
 };
 
-// 4. Get All Categories (GET)
 const getAllCategory= (req, res) => {
     const getQuery = `SELECT id, name FROM category`;
 

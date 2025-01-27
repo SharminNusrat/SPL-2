@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/userRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
 
 const db = require('./db-config');
@@ -25,7 +25,7 @@ app.use(cors({
 // app.use(cookieParser);  
 app.use(express.urlencoded({ extended: true })); 
 app.use('/uploads', express.static('uploads'));
-app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.get('/', (req, res) => {
     res.send('Hiii!');

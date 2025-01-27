@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getProfile, updateProfile} = require('../controllers/auth');
+const {register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getProfile, updateProfile} = require('../controllers/userController.js');
 const authenticateToken = require('../middleware/authMiddleware');
 
 router.post('/register', register);
