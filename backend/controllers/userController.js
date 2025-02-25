@@ -133,7 +133,7 @@ const verifyMail = (req, res) => {
     const { email, otp } = req.body;
 
     if (!email || !otp) {
-        return res.json({
+        return res.status(400).json({
             status: 'error',
             error: 'Please provide both email and OTP'
         });
@@ -191,6 +191,61 @@ const verifyMail = (req, res) => {
         //         });
         //     });
         // }
+    });
+};
+
+const resendVerificationOTP = (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({
+            status: 'error',
+            error: 'Email is required'
+        });
+    }
+
+    const q = 'SELECT * FROM users WHERE email = ?';
+    db.query(q, [email], (err, data) => {
+        if (err) {
+            return res.status(500).json({
+                status: 'error',
+                error: 'Database error'
+            });
+        }
+        if (data.length === 0) {
+            return res.status(404).json({
+                status: 'error',
+                error: 'User not found!'
+            });
+        }
+
+        const user = data[0];
+        if (user.is_verified) {
+            return res.status(400).json({
+                status: 'error',
+                error: 'User already verified!'
+            });
+        }
+
+        const verificationToken = generateVerificationToken();
+        const qUpdateUser = 'UPDATE users SET verification_token = ? WHERE email = ?';
+        db.query(qUpdateUser, [verificationToken, email], (err) => {
+            if (err) {
+                return res.status(500).json({
+                    status: 'error',
+                    error: 'Failed to update verification token'
+                });
+            }
+
+            const mailSubject = 'Resend Email Verification OTP';
+            const content = `Your new OTP code is: ${verificationToken}`;
+            sendMail(email, mailSubject, content);
+
+            return res.status(200).json({
+                status: 'success',
+                success: 'Verification OTP resent successfully!'
+            });
+        });
     });
 };
 
@@ -430,4 +485,4 @@ const logout = (req, res) => {
     }).status(200).json('User has been logged out!');
 };
 
-module.exports = { register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getProfile, updateProfile };
+module.exports = { register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getProfile, updateProfile, resendVerificationOTP };
