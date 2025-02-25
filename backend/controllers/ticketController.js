@@ -8,92 +8,110 @@ const authenticateToken = require('../middleware/authMiddleware');
 const createTicket = (req, res) => {
     const { category_id, computer_id, title, roomNumber, description } = req.body;
     const user_id = req.user.id; 
-    const ticket_status = 'Open';
     const created_at = new Date();
+    
     if (!category_id || !computer_id || !title || !roomNumber || !description) {
         return res.status(400).json({ error: 'All fields are required.' });
     }
 
- const getTechnicianQuery = `SELECT 
-u.id
-FROM 
-users u
-JOIN 
-user_details ud1 
-ON u.id = ud1.user_id 
-AND ud1.details_key = 'expertise' 
-AND ud1.details_value = 'Hardware'
-LEFT JOIN 
-user_details ud2 
-ON u.id = ud2.user_id 
-AND ud2.details_key = 'last_assigned_at'
-LEFT JOIN 
-(SELECT 
-    assigned_to, 
-    COUNT(*) AS open_tickets 
- FROM 
-    ticket 
- WHERE 
-    ticket_status = 'Open' 
- GROUP BY 
-    assigned_to
-) t 
-ON u.id = t.assigned_to
-WHERE 
-u.role = 'technician'
-ORDER BY 
-t.open_tickets ASC,
-COALESCE(ud2.details_value, '1970-01-01') ASC
-LIMIT 1;
-`;
+    
+    const getCategoryQuery = `
+        SELECT name FROM category WHERE id = ?
+    `;
 
-
-    db.query(getTechnicianQuery, (err, results) => {
+    db.query(getCategoryQuery, [category_id], (err, categoryResults) => {
         if (err) {
-            console.error('Error fetching technician for load balancing:', err);
-            return res.status(500).json({ error: 'Database error while finding technician.' });
+            console.error('Error fetching category:', err);
+            return res.status(500).json({ error: 'Database error while determining category.' });
         }
 
-        if (results.length === 0) {
-            return res.status(404).json({ error: 'No technicians available for assignment.' });
+        if (categoryResults.length === 0) {
+            return res.status(404).json({ error: 'Category not found.' });
         }
 
-        const assigned_to = results[0].id;
-
-        const insertTicketQuery = `
-            INSERT INTO ticket (user_id, category_id, computer_id, title, roomNumber, description, ticket_status, created_at, assigned_to)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        const categoryName = categoryResults[0].name;
+        
+        const getTechnicianQuery = `SELECT 
+            u.id
+            FROM 
+                users u
+            JOIN 
+                user_details ud1 
+                ON u.id = ud1.user_id 
+                AND ud1.details_key = 'expertise' 
+                AND ud1.details_value = ?
+            LEFT JOIN 
+                user_details ud2 
+                ON u.id = ud2.user_id 
+                AND ud2.details_key = 'last_assigned_at'
+            LEFT JOIN 
+                (SELECT 
+                    assigned_to, 
+                    COUNT(*) AS open_tickets 
+                FROM 
+                    ticket 
+                WHERE 
+                    ticket_status = 'Open' OR ticket_status = 'In-Progress'
+                GROUP BY 
+                    assigned_to
+                ) t 
+                ON u.id = t.assigned_to
+            WHERE 
+                u.role = 'technician'
+            ORDER BY 
+                t.open_tickets ASC,
+                COALESCE(ud2.details_value, '1970-01-01') ASC
+            LIMIT 1;
         `;
-        const ticketStatus = 'In-Progress';
-        db.query(
-            insertTicketQuery,
-            [user_id, category_id, computer_id, title, roomNumber, description, ticketStatus, created_at, assigned_to],
-            (err, result) => {
-                if (err) {
-                    console.error('Error inserting ticket:', err);
-                    return res.status(500).json({ error: 'Database error while creating ticket.' });
-                }
 
-                const updateLastAssignedQuery = `
-                    INSERT INTO user_details (user_id, details_key, details_value)
-                    VALUES (?, 'last_assigned_at', NOW())
-                    ON DUPLICATE KEY UPDATE details_value = NOW();
-                `;
+        db.query(getTechnicianQuery, [categoryName], (err, results) => {
+            if (err) {
+                console.error('Error fetching technician for load balancing:', err);
+                return res.status(500).json({ error: 'Database error while finding technician.' });
+            }
 
-                db.query(updateLastAssignedQuery, [assigned_to], (err) => {
+            if (results.length === 0) {
+                return res.status(404).json({ error: 'No technicians available with required expertise.' });
+            }
+
+            const assigned_to = results[0].id;
+
+            const insertTicketQuery = `
+                INSERT INTO ticket (user_id, category_id, computer_id, title, roomNumber, description, ticket_status, created_at, assigned_to)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            const ticketStatus = 'In-Progress';
+            
+            db.query(
+                insertTicketQuery,
+                [user_id, category_id, computer_id, title, roomNumber, description, ticketStatus, created_at, assigned_to],
+                (err, result) => {
                     if (err) {
-                        console.error('Error updating last_assigned_at:', err);
-                        return res.status(500).json({ error: 'Database error while updating technician info.' });
+                        console.error('Error inserting ticket:', err);
+                        return res.status(500).json({ error: 'Database error while creating ticket.' });
                     }
 
-                    return res.status(201).json({
-                        message: 'Ticket created successfully',
-                        ticket_id: result.insertId,
-                        assigned_to: assigned_to,
+                    const updateLastAssignedQuery = `
+                        INSERT INTO user_details (user_id, details_key, details_value)
+                        VALUES (?, 'last_assigned_at', NOW())
+                        ON DUPLICATE KEY UPDATE details_value = NOW();
+                    `;
+
+                    db.query(updateLastAssignedQuery, [assigned_to], (err) => {
+                        if (err) {
+                            console.error('Error updating last_assigned_at:', err);
+                            return res.status(500).json({ error: 'Database error while updating technician info.' });
+                        }
+
+                        return res.status(201).json({
+                            message: 'Ticket created successfully',
+                            ticket_id: result.insertId,
+                            assigned_to: assigned_to,
+                        });
                     });
-                });
-            }
-        );
+                }
+            );
+        });
     });
 };
 
