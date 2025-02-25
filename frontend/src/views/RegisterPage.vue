@@ -165,6 +165,7 @@ export default {
 
         if (result.status === "success") {
           alert("Registration successful! Please check your email to verify.");
+          this.$router.push({ path: "/verify", query: { email: this.formData.email } });
         } else {
           alert(result.error || "An error occurred during registration.");
         }
