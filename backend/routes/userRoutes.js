@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getProfile, updateProfile, resendVerificationOTP} = require('../controllers/userController.js');
+const {register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP} = require('../controllers/userController.js');
 const authenticateToken = require('../middleware/authMiddleware');
 
 router.post('/register', register);
@@ -10,6 +10,7 @@ router.post('/recoverPassword/generateOTP', generateRecoveryOTP);
 router.post('/recoverPassword/resetPass', resetPassword);
 router.post('/login', login);
 router.post('/logout', logout);
+router.get('/:id', getUserById);
 
 // Authenticated routes
 router.get('/profile', authenticateToken, getProfile);

@@ -3,6 +3,9 @@ import LoginPage from '../views/LoginPage.vue';
 import RegisterPage from '../views/RegisterPage.vue';
 import VerifyMailPage from '../views/VerifyMailPage.vue';
 //import DashboardPage from '../views/DashboardPage.vue';
+import CreateTicket from '../views/CreateTicket.vue';
+import TicketListPage from '../views/TicketListPage.vue';
+import TicketDetailsPage from '../views/TicketDetailsPage.vue';
 
 const routes = [
   { 
@@ -23,7 +26,7 @@ const routes = [
     path: '/verify', 
     name: 'verify',
     component: VerifyMailPage 
-  }
+  },
   
   // { 
   //   path: '/dashboard', 
@@ -31,6 +34,25 @@ const routes = [
   //   component: DashboardPage,
   //   meta: { requiresAuth: true } // Add authentication requirement
   // }
+
+  {
+    path: '/dashboard/create-ticket',
+    name: 'create-ticket',
+    component: CreateTicket,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/tickets',
+    name: 'ticket-list',
+    component: TicketListPage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/ticket/:id',
+    name: 'ticket-details',
+    component: TicketDetailsPage,
+    meta: { required: true }
+  },
 ];
 
 const router = createRouter({

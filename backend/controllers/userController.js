@@ -8,6 +8,31 @@ const generateVerificationToken = () => {
     return Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
 };
 
+const getUserById = (req, res) => {
+    const userId = req.params.id;
+    console.log("Fetching user with ID:", userId);
+
+    const q = 'SELECT fname, lname FROM users WHERE id = ?';
+    db.query(q, [userId], (err, result) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({
+                status: 'error',
+                error: 'Database error'
+            });
+        }
+        if (result.length === 0) {
+            console.log("User not found for ID:", userId);
+            return res.status(404).json({
+                status: 'error',
+                error: 'User not found!'
+            });
+        }
+
+        return res.json(result[0]);
+    })
+}
+
 const getProfile = (req, res) => {
     const userId = req.user.id;
 
@@ -485,4 +510,4 @@ const logout = (req, res) => {
     }).status(200).json('User has been logged out!');
 };
 
-module.exports = { register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getProfile, updateProfile, resendVerificationOTP };
+module.exports = { register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP };
