@@ -64,8 +64,10 @@ export default {
 
         // Store token and redirect user
         localStorage.setItem("accessToken", res.data.token);
+        localStorage.setItem("userRole", res.data.role); // Save role
         alert("Login successful!");
-        this.$router.push("/dashboard");
+        console.log("Redirecting to /dashboard...");
+        this.$router.replace("/dashboard");
       } catch (error) {
         console.error(error.response?.data || "Login failed");
         alert(error.response?.data || "Invalid email or password!");

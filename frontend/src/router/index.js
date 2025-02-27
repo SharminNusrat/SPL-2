@@ -2,10 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginPage from '../views/LoginPage.vue';
 import RegisterPage from '../views/RegisterPage.vue';
 import VerifyMailPage from '../views/VerifyMailPage.vue';
-//import DashboardPage from '../views/DashboardPage.vue';
 import CreateTicket from '../views/CreateTicket.vue';
 import TicketListPage from '../views/TicketListPage.vue';
 import TicketDetailsPage from '../views/TicketDetailsPage.vue';
+import Dashboard from '../views/Dashboard.vue';
+import StudentTeacherDashboard from '../views/StudentTeacherDashboard.vue';
+import TechnicianDashboard from '../views/TechnicianDashboard.vue';
+import AdminDashboard from '../views/AdminDashboard.vue';
 
 const routes = [
   { 
@@ -28,13 +31,6 @@ const routes = [
     component: VerifyMailPage 
   },
   
-  // { 
-  //   path: '/dashboard', 
-  //   name: 'dashboard',
-  //   component: DashboardPage,
-  //   meta: { requiresAuth: true } // Add authentication requirement
-  // }
-
   {
     path: '/dashboard/create-ticket',
     name: 'create-ticket',
@@ -53,6 +49,26 @@ const routes = [
     component: TicketDetailsPage,
     meta: { required: true }
   },
+  { path: '/dashboard',
+    name: 'dashboard', 
+    component: Dashboard, 
+    meta: { requiresAuth: true } 
+  },
+  { path: '/student-teacher',
+    name: 'student-teacherDashboard',
+    component: StudentTeacherDashboard, 
+    meta: { requiresAuth: true } 
+  },
+  { path: '/technician',
+    name: 'technicianDashboard',
+    component: TechnicianDashboard, 
+    meta: { requiresAuth: true } 
+  },
+  { path: '/admin',
+    name: 'adminDashboard',
+    component: AdminDashboard, 
+    meta: { requiresAuth: true } 
+  },
 ];
 
 const router = createRouter({
@@ -60,15 +76,27 @@ const router = createRouter({
   routes,
 });
 
-// Navigation guard for authentication
-// router.beforeEach((to, from, next) => {
-//   const isAuthenticated = localStorage.getItem('user'); // Check if user is logged in
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = localStorage.getItem("accessToken"); // Check if user is logged in
+  const userRole = localStorage.getItem("userRole"); // Get user role
   
-//   if (to.meta.requiresAuth && !isAuthenticated) {
-//     next('/login');
-//   } else {
-//     next();
-//   }
-// });
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/login'); // Redirect unauthenticated users to login
+  } else if (to.path === '/dashboard') {
+    // Redirect users to their specific dashboard based on role
+    if (userRole === "student" || userRole === "teacher") {
+      next('/student-teacher');
+    } else if (userRole === "technician") {
+      next('/technician');
+    } else if (userRole === "admin") {
+      next('/admin');
+    } else {
+      next('/login');
+    }
+  } else {
+    next();
+  }
+});
+
 
 export default router;
