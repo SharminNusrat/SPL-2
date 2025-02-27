@@ -20,15 +20,6 @@
             </option>
           </select>
 
-          <!-- <p>Loaded Categories: {{ categories }}</p> -->
-
-          <!-- <select v-model="ticket.category_id" class="form-select" required>
-            <option value="1">Hardware Issue</option>
-            <option value="2">Software Issue</option>
-            <option value="3">Network Issue</option>
-           </select> -->
-
-
         </div>
         <div class="mb-3">
           <label class="form-label">Room Number</label>
@@ -47,26 +38,6 @@
   
         <button type="submit" class="btn btn-success">Submit Ticket</button>
       </form>
-  
-      <!-- Comment Section (Only Enabled After Ticket Creation) -->
-      <div v-if="ticketCreated" class="mt-4">
-        <h5>Comments</h5>
-        <div v-if="comments.length > 0">
-          <div v-for="comment in comments" :key="comment.id" class="border p-2 mb-2">
-            <p><strong>{{ comment.author }}:</strong> {{ comment.text }}</p>
-            <small>{{ formatDate(comment.created_at) }}</small>
-          </div>
-        </div>
-        <p v-else>No comments yet.</p>
-  
-        <!-- Add Comment Form -->
-        <form @submit.prevent="submitComment" class="mt-3">
-          <div class="mb-3">
-            <textarea v-model="newComment" class="form-control" placeholder="Add a comment..." required></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary">Submit Comment</button>
-        </form>
-      </div>
     </div>
   </template>
   
@@ -85,8 +56,6 @@
         file: null,
         ticketCreated: false,
         createdTicketId: null,
-        comments: [],
-        newComment: ""
       };
     },
     methods: {
@@ -167,44 +136,6 @@
           }
         } catch (error) {
           console.error("Error uploading file:", error);
-        }
-      },
-      async fetchComments() {
-        try {
-          const token = localStorage.getItem('accessToken');
-          const response = await fetch(`/api/tickets/tickets/${this.createdTicketId}/comments`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-          });
-          const data = await response.json();
-          this.comments = data;
-        } catch (error) {
-          console.error("Error fetching comments:", error);
-        }
-      },
-      async submitComment() {
-        try {
-          const token = localStorage.getItem('accessToken');
-          const response = await fetch(`/api/tickets/tickets/${this.createdTicketId}/comments`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ text: this.newComment })
-          });
-  
-          const data = await response.json();
-          if (data.error) {
-            alert(data.error);
-          } else {
-            this.newComment = "";
-            this.fetchComments(); 
-          }
-        } catch (error) {
-          console.error("Error submitting comment:", error);
         }
       },
       formatDate(dateString) {
