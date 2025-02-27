@@ -169,53 +169,45 @@ const verifyMail = (req, res) => {
     db.query(q, [email], (err, data) => {
         if (err) {
             console.log(err);
+            return res.status(500).json({ status: 'error', error: 'Database error' });
         }
         if (!data[0]) {
-            return res.json({
-                status: 'error',
-                error: 'Email not found'
-            });
+            return res.status(404).json({ status: 'error', error: 'Email not found' });
         }
 
         const user = data[0];
+
         if (user.verification_token === otp) {
             const q = 'UPDATE users SET is_verified = 1, verification_token = NULL WHERE email = ?';
             db.query(q, [email], (err, updatedData) => {
                 if (err) {
                     console.log(err);
-                    return res.status(500).json({
-                        status: 'error',
-                        error: 'Failed to update user data'
-                    });
+                    return res.status(500).json({ status: 'error', error: 'Failed to update user data' });
                 }
+
+                // Generate token after successful verification
+                const token = jwt.sign(
+                    { id: user.id, role: user.role }, 
+                    process.env.JWT_SECRET, 
+                    { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+                );
+
+                res.cookie('accessToken', token, {
+                    expires: new Date(Date.now() + (process.env.JWT_COOKIE_EXPIRES || 1) * 24 * 60 * 60 * 1000),
+                    httpOnly: true,
+                });
+
                 return res.json({
                     status: 'success',
-                    success: 'Email verified successfully!'
+                    success: 'Email verified successfully!',
+                    role: user.role,  // Pass role
+                    token           // Pass token
                 });
             });
+        } else {
+            return res.status(400).json({ status: 'error', error: 'Incorrect OTP!' });
         }
-
-        else {
-            return res.status(400).json({
-                status: 'error',
-                error: 'Incorrect OTP!'
-            });
-        }
-        // else {
-        //     const q = 'DELETE FROM users WHERE email = ?';
-        //     db.query(q, [email], (err, result) => {
-        //         if (err) {
-        //             console.log(err);
-        //             return res.status(500).json({
-        //                 error: 'Failed to delete unverified user'
-        //             });
-        //         }
-        //         return res.status(400).json({
-        //             status: 'error',
-        //             error: 'Incorrect OTP!'
-        //         });
-        //     });
-        // }
+        
     });
 };
 

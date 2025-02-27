@@ -82,7 +82,7 @@ router.beforeEach((to, from, next) => {
   
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login'); // Redirect unauthenticated users to login
-  } else if (to.path === '/dashboard') {
+  } else if (to.path === '/dashboard' && isAuthenticated) {
     // Redirect users to their specific dashboard based on role
     if (userRole === "student" || userRole === "teacher") {
       next('/student-teacher');
