@@ -478,7 +478,7 @@ const login = (req, res) => {
         if (!checkPassword) {
             return res.status(400).json('Incorrect email or password!');
         }
-
+        console.log('User Role:', user.role);
         // Generate token
         const id = user.id;
         const token = jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -498,6 +498,7 @@ const login = (req, res) => {
         // Send only `id` and `token` in the response
         res.cookie('accessToken', token, cookieOptions).status(200).json({
             id: user.id,
+            role: user.role,
             token,
         });
     });
