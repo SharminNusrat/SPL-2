@@ -2,8 +2,8 @@ const db = require('../db-config');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendMail = require('../utils/sendMail');
-const authenticateToken = require('../middleware/authMiddleware');
-
+//const authenticateToken = require('../middleware/authMiddleware');
+const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 const generateVerificationToken = () => {
     return Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
 };

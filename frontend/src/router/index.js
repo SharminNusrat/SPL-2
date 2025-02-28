@@ -10,6 +10,7 @@ import StudentTeacherDashboard from '../views/StudentTeacherDashboard.vue';
 import TechnicianDashboard from '../views/TechnicianDashboard.vue';
 import AdminDashboard from '../views/AdminDashboard.vue';
 import UserProfile from '../views/UserProfile.vue';
+import TicketCategory from '../views/TicketCategory.vue';
 
 const routes = [
   { 
@@ -49,6 +50,12 @@ const routes = [
     name: 'ticket-details',
     component: TicketDetailsPage,
     meta: { required: true }
+  },
+  {
+    path: '/category',
+    name: 'category',
+    component: TicketCategory,
+    meta: { requiresAuth: true }
   },
   { path: '/dashboard',
     name: 'dashboard', 
