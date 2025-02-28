@@ -82,14 +82,14 @@
       async fetchUserNames() {
         try {
           if(this.ticket.user_id) {
-            const createdByRes = await fetch(`/api/user/user${this.ticket.user_id}`);
+            const createdByRes = await fetch(`/api/user/user/${this.ticket.user_id}`);
             const createdByData = await createdByRes.json();
             console.log("Created By API Response:", createdByData);
             this.createdByName = createdByData.fname + " " + createdByData.lname;
           }
 
           if(this.ticket.assigned_to) {
-            const assignedToRes = await fetch(`/api/user/user${this.ticket.assigned_to}`);
+            const assignedToRes = await fetch(`/api/user/user/${this.ticket.assigned_to}`);
             const assignedToData = await assignedToRes.json();
             console.log("Assigned To API Response:", assignedToData);
             this.assignedToName = assignedToData.fname + " " + assignedToData.lname;
