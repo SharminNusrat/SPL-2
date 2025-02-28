@@ -2,7 +2,9 @@ const router = require('express').Router();
 const db = require('../db-config');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const authenticateToken = require('../middleware/authMiddleware');
+// const authenticateToken = require('../middleware/authMiddleware');
+// const isAdmin = require('../middleware/authMiddleware');
+const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 
 const addCategory = (req, res) => {
     const { name } = req.body;

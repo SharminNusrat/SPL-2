@@ -19,7 +19,7 @@
       <template v-if="role === 'admin'">
         <!-- <li><router-link to="/admin"></router-link></li> -->
         <li><router-link to="/tickets">All Tickets</router-link></li>
-        <!-- <li><router-link to="/users">Users</router-link></li> -->
+        <li><router-link to="/category">Ticket Categories</router-link></li>
         <!-- <li><router-link to="/technician-reports">Technician Reports</router-link></li> -->
         <!-- <li><router-link to="/category-reports">Category Reports</router-link></li> -->
       </template>
