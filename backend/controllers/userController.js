@@ -34,7 +34,6 @@ const getUserById = (req, res) => {
 }
 
 const getProfile = (req, res) => {
-    
     console.log("hiiii");
     const userId = req.user.id;
 
