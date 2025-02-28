@@ -10,7 +10,7 @@ router.post('/recoverPassword/generateOTP', generateRecoveryOTP);
 router.post('/recoverPassword/resetPass', resetPassword);
 router.post('/login', login);
 router.post('/logout', logout);
-router.get('/:id', getUserById);
+router.get('/user/:id', getUserById);
 
 // Authenticated routes
 router.get('/profile', authenticateToken, getProfile);
