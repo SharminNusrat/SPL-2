@@ -10,7 +10,7 @@ const generateVerificationToken = () => {
 
 const getUserById = (req, res) => {
     const userId = req.params.id;
-    console.log("Fetching user with ID:", userId);
+    // console.log("Fetching user with ID:", userId);
 
     const q = 'SELECT fname, lname FROM users WHERE id = ?';
     db.query(q, [userId], (err, result) => {
@@ -22,7 +22,7 @@ const getUserById = (req, res) => {
             });
         }
         if (result.length === 0) {
-            console.log("User not found for ID:", userId);
+            // console.log("User not found for ID:", userId);
             return res.status(404).json({
                 status: 'error',
                 error: 'User not found!'
@@ -35,6 +35,7 @@ const getUserById = (req, res) => {
 
 const getProfile = (req, res) => {
     
+    console.log("hiiii");
     const userId = req.user.id;
 
     const q = 'SELECT id, fname, lname, phn_no, email FROM users WHERE id = ?';
@@ -48,6 +49,7 @@ const getProfile = (req, res) => {
             });
         }
 
+        console.log(data);
         if (data.length === 0) {
             return res.status(404).json({
                 status: 'error',
@@ -83,8 +85,9 @@ const getProfile = (req, res) => {
     });
 };
 
+
 const updateProfile = (req, res) => {
-    
+
     const userId = req.user.id;
     const { fname, lname, phn_no, roleData } = req.body;
 
@@ -457,7 +460,7 @@ const register = async (req, res) => {
 const login = (req, res) => {
     const q = 'SELECT * FROM users WHERE email = ?';
 
-    db.query(q, [req.body.email], (err, data) => {
+    db.query(q, [req.body.email], async (err, data) => {
         if (err) {
             return res.status(500).json(err);
         }
@@ -467,12 +470,33 @@ const login = (req, res) => {
 
         const user = data[0];
 
+        if (!user.is_verified) {
+            const verificationToken = generateVerificationToken();
+
+            const qUpdate = 'UPDATE users SET verification_token = ? WHERE email = ?';
+
+            db.query(qUpdate, [verificationToken, user.email], (updateError) => {
+                if (updateError) {
+                    return res.status(500).json('Error updating verification code');
+                }
+
+                const mailSubject = 'Email Verification OTP';
+                const content = `Your OTP code is: ${verificationToken}`;
+                sendMail(user.email, mailSubject, content);
+
+                return res.status(400).json('Your account is not verified. A new otp has been sent to your email. Please verify your account first.');
+            });
+
+            return;
+        }
+
         const checkPassword = bcrypt.compareSync(req.body.password, user.password);
 
         if (!checkPassword) {
             return res.status(400).json('Incorrect email or password!');
         }
         console.log('User Role:', user.role);
+
         // Generate token
         const id = user.id;
         const token = jwt.sign({ id }, process.env.JWT_SECRET, {

@@ -5,7 +5,7 @@
       <h1>LabHelp</h1>
       <ul>
         <li><router-link to="/dashboard">Home</router-link></li>
-        <li v-if="role === 'student' || role === 'teacher'"><router-link to="/dashboard/create-ticket">Create Ticket</router-link></li>
+        <li v-if="role === 'student' || role === 'teacher'"><router-link to="/create-ticket">Create Ticket</router-link></li>
         <li v-if="role === 'technician'"><router-link to="/technician">Technician Dashboard</router-link></li>
         <li v-if="role === 'admin'"><router-link to="/admin">Admin Dashboard</router-link></li>
         <li><button @click="logout">Logout</button></li>
