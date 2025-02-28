@@ -34,6 +34,7 @@ const getUserById = (req, res) => {
 }
 
 const getProfile = (req, res) => {
+    
     const userId = req.user.id;
 
     const q = 'SELECT id, fname, lname, phn_no, email FROM users WHERE id = ?';
@@ -83,6 +84,7 @@ const getProfile = (req, res) => {
 };
 
 const updateProfile = (req, res) => {
+    
     const userId = req.user.id;
     const { fname, lname, phn_no, roleData } = req.body;
 

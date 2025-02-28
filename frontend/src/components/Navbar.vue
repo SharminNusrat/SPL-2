@@ -23,7 +23,7 @@ export default {
   },
   methods: {
     logout() {
-      localStorage.removeItem("userToken");
+      localStorage.removeItem("accessToken");
       localStorage.removeItem("userRole");
       this.$router.push("/login");
     },

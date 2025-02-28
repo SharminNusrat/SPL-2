@@ -3,6 +3,7 @@
     <h2>Dashboard</h2>
     <ul>
       <li><router-link to="/dashboard">Home</router-link></li>
+      <li><router-link to="/profile">Profile</router-link></li>
 
       <template v-if="role === 'student' || role === 'teacher'">
         
