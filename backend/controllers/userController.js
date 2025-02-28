@@ -84,7 +84,9 @@ const getProfile = (req, res) => {
     });
 };
 
+
 const updateProfile = (req, res) => {
+
     const userId = req.user.id;
     const { fname, lname, phn_no, roleData } = req.body;
 
@@ -171,53 +173,45 @@ const verifyMail = (req, res) => {
     db.query(q, [email], (err, data) => {
         if (err) {
             console.log(err);
+            return res.status(500).json({ status: 'error', error: 'Database error' });
         }
         if (!data[0]) {
-            return res.json({
-                status: 'error',
-                error: 'Email not found'
-            });
+            return res.status(404).json({ status: 'error', error: 'Email not found' });
         }
 
         const user = data[0];
+
         if (user.verification_token === otp) {
             const q = 'UPDATE users SET is_verified = 1, verification_token = NULL WHERE email = ?';
             db.query(q, [email], (err, updatedData) => {
                 if (err) {
                     console.log(err);
-                    return res.status(500).json({
-                        status: 'error',
-                        error: 'Failed to update user data'
-                    });
+                    return res.status(500).json({ status: 'error', error: 'Failed to update user data' });
                 }
+
+                // Generate token after successful verification
+                const token = jwt.sign(
+                    { id: user.id, role: user.role }, 
+                    process.env.JWT_SECRET, 
+                    { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+                );
+
+                res.cookie('accessToken', token, {
+                    expires: new Date(Date.now() + (process.env.JWT_COOKIE_EXPIRES || 1) * 24 * 60 * 60 * 1000),
+                    httpOnly: true,
+                });
+
                 return res.json({
                     status: 'success',
-                    success: 'Email verified successfully!'
+                    success: 'Email verified successfully!',
+                    role: user.role,  // Pass role
+                    token           // Pass token
                 });
             });
+        } else {
+            return res.status(400).json({ status: 'error', error: 'Incorrect OTP!' });
         }
-
-        else {
-            return res.status(400).json({
-                status: 'error',
-                error: 'Incorrect OTP!'
-            });
-        }
-        // else {
-        //     const q = 'DELETE FROM users WHERE email = ?';
-        //     db.query(q, [email], (err, result) => {
-        //         if (err) {
-        //             console.log(err);
-        //             return res.status(500).json({
-        //                 error: 'Failed to delete unverified user'
-        //             });
-        //         }
-        //         return res.status(400).json({
-        //             status: 'error',
-        //             error: 'Incorrect OTP!'
-        //         });
-        //     });
-        // }
+        
     });
 };
 
@@ -465,7 +459,7 @@ const register = async (req, res) => {
 const login = (req, res) => {
     const q = 'SELECT * FROM users WHERE email = ?';
 
-    db.query(q, [req.body.email], (err, data) => {
+    db.query(q, [req.body.email], async (err, data) => {
         if (err) {
             return res.status(500).json(err);
         }
@@ -475,12 +469,33 @@ const login = (req, res) => {
 
         const user = data[0];
 
+        if (!user.is_verified) {
+            const verificationToken = generateVerificationToken();
+
+            const qUpdate = 'UPDATE users SET verification_token = ? WHERE email = ?';
+
+            db.query(qUpdate, [verificationToken, user.email], (updateError) => {
+                if (updateError) {
+                    return res.status(500).json('Error updating verification code');
+                }
+
+                const mailSubject = 'Email Verification OTP';
+                const content = `Your OTP code is: ${verificationToken}`;
+                sendMail(user.email, mailSubject, content);
+
+                return res.status(400).json('Your account is not verified. A new otp has been sent to your email. Please verify your account first.');
+            });
+
+            return;
+        }
+
         const checkPassword = bcrypt.compareSync(req.body.password, user.password);
 
         if (!checkPassword) {
             return res.status(400).json('Incorrect email or password!');
         }
         console.log('User Role:', user.role);
+
         // Generate token
         const id = user.id;
         const token = jwt.sign({ id }, process.env.JWT_SECRET, {

@@ -3,18 +3,22 @@
     <h2>Dashboard</h2>
     <ul>
       <li><router-link to="/dashboard">Home</router-link></li>
+      <li><router-link to="/profile">Profile</router-link></li>
 
       <template v-if="role === 'student' || role === 'teacher'">
-        <li><router-link to="/dashboard/tickets">My Tickets</router-link></li>
-        <li><router-link to="/dashboard/create-ticket">Create Ticket</router-link></li>
+        
+        <li><router-link to="/create-ticket">Create Ticket</router-link></li>
+        <li><router-link to="/ticket/:id">Ticket Details</router-link></li>
       </template>
 
       <template v-if="role === 'technician'">
         <li><router-link to="/technician">Assigned Tickets</router-link></li>
+
       </template>
 
       <template v-if="role === 'admin'">
-        <li><router-link to="/admin">All Tickets</router-link></li>
+        <!-- <li><router-link to="/admin"></router-link></li> -->
+        <li><router-link to="/tickets">All Tickets</router-link></li>
         <!-- <li><router-link to="/users">Users</router-link></li> -->
         <!-- <li><router-link to="/technician-reports">Technician Reports</router-link></li> -->
         <!-- <li><router-link to="/category-reports">Category Reports</router-link></li> -->
@@ -34,7 +38,7 @@ export default {
   },
   methods: {
     logout() {
-      localStorage.removeItem("userToken");
+      localStorage.removeItem("accessToken");
       localStorage.removeItem("userRole");
       this.$router.push("/login");
     },
