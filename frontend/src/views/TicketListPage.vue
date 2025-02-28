@@ -105,12 +105,12 @@ export default {
         });
 
         const userPromises = [...userIds].map(async id => {
-          const res = await fetch(`/api/user/${id}`);
+          const res = await fetch(`/api/user/user/${id}`);
           return { id, data: await res.json() };
         });
 
         const assignedPromises = [...assignedIds].map(async id => {
-          const res = await fetch(`/api/user/${id}`);
+          const res = await fetch(`/api/user/user/${id}`);
           return { id, data: await res.json() };
         });
 

@@ -32,19 +32,19 @@ const routes = [
   },
   
   {
-    path: '/dashboard/create-ticket',
+    path: '/create-ticket',
     name: 'create-ticket',
     component: CreateTicket,
     meta: { requiresAuth: true }
   },
   {
-    path: '/dashboard/tickets',
+    path: '/tickets',
     name: 'ticket-list',
     component: TicketListPage,
     meta: { requiresAuth: true }
   },
   {
-    path: '/dashboard/ticket/:id',
+    path: '/ticket/:id',
     name: 'ticket-details',
     component: TicketDetailsPage,
     meta: { required: true }

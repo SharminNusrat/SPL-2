@@ -10,7 +10,7 @@ const generateVerificationToken = () => {
 
 const getUserById = (req, res) => {
     const userId = req.params.id;
-    console.log("Fetching user with ID:", userId);
+    // console.log("Fetching user with ID:", userId);
 
     const q = 'SELECT fname, lname FROM users WHERE id = ?';
     db.query(q, [userId], (err, result) => {
@@ -22,7 +22,7 @@ const getUserById = (req, res) => {
             });
         }
         if (result.length === 0) {
-            console.log("User not found for ID:", userId);
+            // console.log("User not found for ID:", userId);
             return res.status(404).json({
                 status: 'error',
                 error: 'User not found!'
@@ -34,6 +34,7 @@ const getUserById = (req, res) => {
 }
 
 const getProfile = (req, res) => {
+    console.log("hiiii");
     const userId = req.user.id;
 
     const q = 'SELECT id, fname, lname, phn_no, email FROM users WHERE id = ?';
@@ -47,6 +48,7 @@ const getProfile = (req, res) => {
             });
         }
 
+        console.log(data);
         if (data.length === 0) {
             return res.status(404).json({
                 status: 'error',
