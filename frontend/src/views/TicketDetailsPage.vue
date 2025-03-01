@@ -6,9 +6,24 @@
         <div class="card p-3 mb-4">
           <h4>{{ ticket.title }}</h4>
           <p><strong>Status:</strong> {{ ticket.ticket_status }}</p>
+          <p><strong>Category:</strong> {{ ticket.category_name || "Unknown" }}</p>
           <p><strong>Assigned To:</strong> {{ assignedToName || "Unassigned" }}</p>
           <p><strong>Created By:</strong> {{ createdByName || "Unknown" }}</p>
           <p><strong>Created Date:</strong> {{ formatDate(ticket.created_at) }}</p>
+        </div>
+
+        <div v-if="userRole.toLowerCase() === 'technician'">
+          <label for="status">Update Status:</label>
+          <select v-model="newStatus" class="form-select">
+            <option value="Resolved">Resolved</option>
+          </select>
+          <button @click="updateStatus" class="btn btn-success mt-2">Update</button>
+        </div>
+
+        <div v-if="ticket.ticket_status === 'Resolved' && userRole.toLowerCase() !== 'technician'">
+          <label for="verification">Enter Verification Code:</label>
+          <input v-model="verificationCode" class="form-control" />
+          <button @click="verifyTicket" class="btn btn-primary mt-2">Verify</button>
         </div>
 
         <div v-if="attachments.length">
@@ -61,9 +76,11 @@
         loggedInUserId: localStorage.getItem('user_id') || null,
         comments: [],
         newComment: "",
+        newStatus: "",
         assignedToName: "",
         createdByName: "",
-        attachments: []
+        attachments: [],
+        verificationCode: ""
       };
     },
     methods: {
@@ -145,10 +162,64 @@
           console.error("Error deleting attachment:", error);
         }
       },
-      async fetchTicket() {
-        const ticketId = this.$route.params.id;
+      async updateStatus() {
+        try {
+          const token = localStorage.getItem("accessToken");
+          const response = await fetch(`/api/tickets/${this.ticket.id}/status`, {
+            method: "PUT",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ status: this.newStatus })
+          });
+          const data = await response.json();
+
+          if (response.ok) {
+            alert("Ticket status updated. Verification code sent to user.");
+            this.ticket.ticket_status = this.newStatus;
+          } else {
+            console.error("Error updating status:", data.error);
+          }
+        } catch (error) {
+          console.error("Error updating status:", error);
+        }
+      },
+      async fetchCategoryName() {
         try {
           const token = localStorage.getItem('accessToken');
+          const response = await fetch(`/api/tickets/categories`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          const data = await response.json();
+          console.log('Fetched Categories API Response:', data);
+
+          if(!data.categorie || !Array.isArray(data.categorie)) {
+            console.error('Error: categories is undefined or not an array!', data);
+            return;
+          }
+
+          const categoryMap = {};
+          data.categorie.forEach(category => {
+            categoryMap[category.id] = category.name;
+          });
+
+          this.ticket.category_name = categoryMap[this.ticket.category_id] || "Unknown";
+          console.log("Updated Ticket with Category:", this.ticket.category_name);
+        } 
+        catch (error) {
+          console.error('Error fetching category:', error);
+        }
+      },
+      async fetchTicket() {
+        try {
+          const token = localStorage.getItem('accessToken');
+          this.userRole = localStorage.getItem('userRole');
+          const ticketId = this.$route.params.id;
+
           const response = await fetch(`/api/tickets/tickets/${ticketId}`, {
             method: 'GET',
             headers: {
@@ -157,9 +228,16 @@
           });
           const data = await response.json();
           console.log("Ticket Details API Response:", data);
-          this.ticket = data.ticket;
-          this.fetchUserNames();
-          this.fetchAttachments();
+          if(response.ok) {
+            this.ticket = data.ticket;
+            this.fetchUserNames();
+            this.fetchAttachments();
+            this.fetchComments();
+            this.fetchCategoryName();
+          }
+          else {
+            console.error('Error fetching ticket:', data);
+          }
         } catch (error) {
           console.error("Error fetching ticket:", error);
         }
@@ -275,6 +353,29 @@
         }
         catch(error) {
           console.error("Error deleting comment:", error);
+        }
+      },
+      async verifyTicket() {
+        try {
+          const token = localStorage.getItem("accessToken");
+          const response = await fetch(`/api/tickets/${this.ticket.id}/verify`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ code: this.verificationCode })
+          });
+          const data = await response.json();
+
+          if (response.ok) {
+            alert("Ticket successfully closed.");
+            this.ticket.ticket_status = "Closed";
+          } else {
+            console.error("Error verifying ticket:", data.error);
+          }
+        } catch (error) {
+          console.error("Error verifying ticket:", error);
         }
       },
       formatDate(dateString) {
