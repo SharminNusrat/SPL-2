@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const authenticateToken = require('../middleware/authMiddleware'); // Import the middleware
+// const authenticateToken = require('../middleware/authMiddleware'); // Import the middleware
+// const isAdmin = require('../middleware/authMiddleware'); // Import the middleware
+const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 
 
 const {
@@ -47,9 +49,9 @@ router.put('/:id/status', authenticateToken, updateTicketStatus);
 router.post('/:id/verify', authenticateToken, verifyTicket);
 router.get('/userTickets', authenticateToken, getTicketsByUser);
 
-router.post('/categories', authenticateToken,addCategory);
-router.put('/categories/:id', authenticateToken,updateExistingCategory);
-router.delete('/categories/:id', authenticateToken,deleteCategory);
+router.post('/categories', authenticateToken,isAdmin,addCategory);
+router.put('/categories/:id', authenticateToken,isAdmin,updateExistingCategory);
+router.delete('/categories/:id', authenticateToken,isAdmin,deleteCategory);
 router.get('/categories', authenticateToken,getAllCategory);
 
 router.post('/tickets/:ticket_id/comments', authenticateToken,addComment);

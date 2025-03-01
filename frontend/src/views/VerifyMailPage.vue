@@ -52,6 +52,8 @@
   
           if (res.data.status === "success") {
             localStorage.setItem("isVerified", "true");
+            localStorage.setItem("accessToken", res.data.token);
+            localStorage.setItem("userRole", res.data.role); // Store role
             alert("Email verified successfully!");
             this.$router.push("/dashboard");
           } else {
@@ -65,13 +67,17 @@
   
       async resendCode() {
         try {
-          const res = await axios.post("/api/user/resendOTP");
-          alert("New verification code has been sent to your email!");
+            const res = await axios.post("/api/user/resendOTP", {
+                email: this.email, // Pass the email
+            });
+
+            alert("New verification code has been sent to your email!");
         } catch (error) {
-          console.error(error.response?.data || "Failed to resend code");
-          alert("Failed to resend verification code. Please try again!");
+            console.error(error.response?.data || "Failed to resend code");
+            alert("Failed to resend verification code. Please try again!");
         }
-      }
+      },
+
     },
   };
   </script>
