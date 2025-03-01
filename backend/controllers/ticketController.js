@@ -119,7 +119,7 @@ const updateTicketStatus = (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const allowedStatuses = ['Resolved', 'Closed'];
+    const allowedStatuses = ['Resolved', 'Closed']; // Allowed statuses
     if (!allowedStatuses.includes(status)) {
         return res.status(400).json({ error: 'Invalid status' });
     }
@@ -137,6 +137,12 @@ const updateTicketStatus = (req, res) => {
 
         const ticket = results[0];
 
+        // Check if the ticket is already closed
+        if (ticket.ticket_status === 'Closed') {
+            return res.status(400).json({ error: 'Ticket is already closed and cannot be modified.' });
+        }
+
+        // Proceed with updating the status to Resolved
         if (status === 'Resolved') {
             const generateRandomCode = () => Math.floor(100000 + Math.random() * 900000).toString();
             const verificationCode = generateRandomCode();
@@ -166,7 +172,7 @@ const updateTicketStatus = (req, res) => {
                         });
                     });
            });
-        } else {
+        } else if (status === 'Closed') {
             return res.status(400).json({ error: 'To close a ticket, use the verification endpoint.' });
         }
     });
