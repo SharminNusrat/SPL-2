@@ -59,18 +59,28 @@ export default {
         },
         {
           withCredentials: true,
-        }
-      );
+        });
 
         // Store token and redirect user
         localStorage.setItem("accessToken", res.data.token);
+        localStorage.setItem("userRole", res.data.role); // Save role
         alert("Login successful!");
-        this.$router.push("/dashboard");
-      } catch (error) {
+
+        this.$router.replace("/dashboard");
+
+      }catch (error) {
         console.error(error.response?.data || "Login failed");
-        alert(error.response?.data || "Invalid email or password!");
+        
+        const errorMessage = error.response?.data || "Invalid email or password!";
+        
+        if (errorMessage.includes("Your account is not verified")) {
+          alert("Redirecting to verification page...");
+          this.$router.push({ path: "/verify", query: { email: this.email } });
+        } else {
+          alert(errorMessage);
+        }
       }
-    },
+    }
   },
 };
 </script>

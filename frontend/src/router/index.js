@@ -6,6 +6,7 @@ import VerifyMailPage from '../views/VerifyMailPage.vue';
 import CreateTicket from '../views/CreateTicket.vue';
 import TicketListPage from '../views/TicketListPage.vue';
 import TicketDetailsPage from '../views/TicketDetailsPage.vue';
+import UserTicketsPage from '../views/UserTicketsPage.vue';
 
 const routes = [
   { 
@@ -53,6 +54,12 @@ const routes = [
     component: TicketDetailsPage,
     meta: { required: true }
   },
+  {
+    path: '/my-tickets',
+    name: 'my-tickets',
+    component: UserTicketsPage,
+    meta: { required: true }
+  }
 ];
 
 const router = createRouter({
