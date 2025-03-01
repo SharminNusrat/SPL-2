@@ -58,6 +58,7 @@ const routes = [
     component: UserTicketsPage,
     meta: { required: true }
   },
+  {
     path: '/category',
     name: 'category',
     component: TicketCategory,
