@@ -48,7 +48,7 @@ router.get('/tickets/:id', authenticateToken,getTicketbyId);
 router.put('/:id/status', authenticateToken, updateTicketStatus);
 //router.delete('/:id', authenticateToken, deleteTicket);
 router.post('/:id/verify', authenticateToken, verifyTicket);
-router.get('/tickets', authenticateToken, getTicketsByUser);
+router.get('/userTickets', authenticateToken, getTicketsByUser);
 
 router.post('/categories', authenticateToken,isAdmin,addCategory);
 router.put('/categories/:id', authenticateToken,isAdmin,updateExistingCategory);

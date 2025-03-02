@@ -22,7 +22,7 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>Ticket ID</th>
+          <th>Serial</th>
           <th>Title</th>
           <th>Category</th>
           <th>Status</th>
@@ -35,14 +35,17 @@
         <tr v-if="filteredTickets.length === 0">
           <td colspan="7" class="text-center">No tickets found</td>
         </tr>
-        <tr v-for="ticket in paginatedTickets" :key="ticket.id">
-          <td>{{ ticket.id }}</td>
+        <tr v-for="(ticket, index) in paginatedTickets" :key="ticket.id">
+          <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
           <td>{{ ticket.title }}</td>
           <td>{{ ticket.category_name }}</td>
           <td>{{ ticket.ticket_status }}</td>
           <td>{{ ticket.assigned_to_name ? ticket.assigned_to_name : 'Unassigned' }}</td>
           <td>{{ ticket.created_by_name }}</td>
           <td>{{ formatDate(ticket.created_at) }}</td>
+          <!-- <td>
+          <button @click="viewTicketDetails(ticket.id)" class="btn btn-primary">View Details</button>
+          </td> -->
         </tr>
       </tbody>
     </table>
@@ -93,6 +96,9 @@ export default {
     }
   },
   methods: {
+    // viewTicketDetails(ticketId) {
+    //   this.$router.push(`/ticket/${ticketId}`);
+    // },
     async fetchUserNames() {
       try {
         const userIds = new Set();

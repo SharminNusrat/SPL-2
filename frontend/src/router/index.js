@@ -5,6 +5,7 @@ import VerifyMailPage from '../views/VerifyMailPage.vue';
 import CreateTicket from '../views/CreateTicket.vue';
 import TicketListPage from '../views/TicketListPage.vue';
 import TicketDetailsPage from '../views/TicketDetailsPage.vue';
+import UserTicketsPage from '../views/UserTicketsPage.vue';
 import Dashboard from '../views/Dashboard.vue';
 import StudentTeacherDashboard from '../views/StudentTeacherDashboard.vue';
 import TechnicianDashboard from '../views/TechnicianDashboard.vue';
@@ -52,6 +53,12 @@ const routes = [
     path: '/ticket/:id',
     name: 'ticket-details',
     component: TicketDetailsPage,
+    meta: { required: true }
+  },
+  {
+    path: '/my-tickets',
+    name: 'my-tickets',
+    component: UserTicketsPage,
     meta: { required: true }
   },
   {
@@ -104,7 +111,6 @@ const routes = [
     component: UserProfile, 
     meta: { requiresAuth: true } 
   },
-  
 ];
 
 const router = createRouter({
