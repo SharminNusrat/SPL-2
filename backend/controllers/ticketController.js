@@ -77,14 +77,14 @@ const createTicket = (req, res) => {
             const assigned_to = results[0].id;
 
             const insertTicketQuery = `
-                INSERT INTO ticket (user_id, category_id, computer_id, title, roomNumber, description, ticket_status, created_at, assigned_to)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO ticket (user_id, category_id, computer_id, title, roomNumber, description, ticket_status, created_at, assigned_to,updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             const ticketStatus = 'In-Progress';
             
             db.query(
                 insertTicketQuery,
-                [user_id, category_id, computer_id, title, roomNumber, description, ticketStatus, created_at, assigned_to],
+                [user_id, category_id, computer_id, title, roomNumber, description, ticketStatus, created_at, assigned_to, created_at],
                 (err, result) => {
                     if (err) {
                         console.error('Error inserting ticket:', err);
@@ -159,7 +159,7 @@ const updateTicketStatus = (req, res) => {
                 const content = `Your verification code to close the ticket #${id} is: ${verificationCode}`;
 
                 sendMail(email, mailSubject, content);
-                    const updateQuery = `UPDATE ticket SET ticket_status = ?, verification_code = ? WHERE id = ?`;
+                    const updateQuery = `UPDATE ticket SET ticket_status = ?, verification_code = ?, updated_at = NOW() WHERE id = ?`;
                     db.query(updateQuery, [status, verificationCode, id], (updateErr) => {
                         if (updateErr) {
                             console.error(updateErr);
@@ -199,7 +199,7 @@ const verifyTicket= (req, res) => {
             return res.status(400).json({ error: 'Invalid verification code.' });
         }
 
-        const updateQuery = `UPDATE ticket SET ticket_status = 'Closed', verification_code = NULL WHERE id = ?`;
+        const updateQuery = `UPDATE ticket SET ticket_status = 'Closed', verification_code = NULL, updated_at = NOW() WHERE id = ?`;
 
         db.query(updateQuery, [id], (updateErr) => {
             if (updateErr) {

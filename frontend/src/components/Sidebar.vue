@@ -9,10 +9,14 @@
         
         <li><router-link to="/create-ticket">Create Ticket</router-link></li>
         <li><router-link to="/ticket/:id">Ticket Details</router-link></li>
+        <li><router-link to="/categoryReport">Category Reports</router-link></li>
+        
       </template>
 
       <template v-if="role === 'technician'">
         <li><router-link to="/technician">Assigned Tickets</router-link></li>
+        <li><router-link to="/categoryReport">Category Reports</router-link></li>
+        <li><router-link to="/technicianSelfReport/:id">Your Performance Report</router-link></li>
 
       </template>
 
@@ -20,8 +24,8 @@
         <!-- <li><router-link to="/admin"></router-link></li> -->
         <li><router-link to="/tickets">All Tickets</router-link></li>
         <li><router-link to="/category">Ticket Categories</router-link></li>
-        <!-- <li><router-link to="/technician-reports">Technician Reports</router-link></li> -->
-        <!-- <li><router-link to="/category-reports">Category Reports</router-link></li> -->
+        <li><router-link to="/categoryReport">Category Reports</router-link></li>
+        <li><router-link to="/technicianReport">Technician Reports</router-link></li>
       </template>
 
       <li><button @click="logout">Logout</button></li>
