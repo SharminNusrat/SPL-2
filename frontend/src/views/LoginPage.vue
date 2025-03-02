@@ -63,6 +63,7 @@ export default {
 
         // Store token and redirect user
         localStorage.setItem("accessToken", res.data.token);
+        localStorage.setItem("userId", res.data.id); 
         localStorage.setItem("userRole", res.data.role); // Save role
         alert("Login successful!");
 

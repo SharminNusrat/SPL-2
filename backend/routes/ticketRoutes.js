@@ -38,6 +38,7 @@ const {
 const {
     technicianPerformance,
     categoryBasedReport,
+    technicianSelfReport
 } = require('../controllers/reportController.js');
 
 // Protected routes
@@ -65,4 +66,6 @@ router.get('/files/ticket/:ticket_id', authenticateToken,getAllFiles);
 
 router.get('/report/technician-performance',authenticateToken,technicianPerformance);
 router.get('/report/category-distribution',categoryBasedReport);
+router.get('/technician-self-report/:id', authenticateToken, technicianSelfReport);
+
 module.exports = router;

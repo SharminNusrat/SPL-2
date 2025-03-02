@@ -73,4 +73,48 @@ const categoryBasedReport= (req, res) => {
         });
     });
 };
-module.exports = {technicianPerformance,categoryBasedReport};
+const technicianSelfReport = (req, res) => {
+    const technicianId = req.params.id;
+    const range = req.query.range || '30d'; // Default to 30 days
+    
+    let daysToFetch;
+    switch(range) {
+      case '3m': daysToFetch = 90; break;
+      case '6m': daysToFetch = 180; break;
+      case '1y': daysToFetch = 365; break;
+      default: daysToFetch = 30; // Default '30d'
+    }
+    
+    // Query to get daily data for assigned vs resolved tickets
+    const query = `
+      SELECT 
+        DATE(t.created_at) AS ticket_date,
+        COUNT(CASE WHEN t.assigned_to = ? THEN 1 END) AS assigned,
+        COUNT(CASE WHEN t.assigned_to = ? AND t.ticket_status IN ('Closed', 'Resolved') AND DATE(t.updated_at) = DATE(t.created_at) THEN 1 END) AS resolved
+      FROM 
+        ticket t
+      WHERE 
+        t.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+      GROUP BY 
+        DATE(t.created_at)
+      ORDER BY 
+        ticket_date ASC
+    `;
+    
+    db.query(query, [technicianId, technicianId, daysToFetch], (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Database error fetching technician self report.' });
+      }
+      
+      // Format the data for the frontend
+      const report = results.map(day => ({
+        date: day.ticket_date.toISOString().split('T')[0], // Format: YYYY-MM-DD
+        assigned: day.assigned || 0,
+        resolved: day.resolved || 0
+      }));
+      
+      return res.status(200).json({ report });
+    });
+  };
+module.exports = {technicianPerformance,categoryBasedReport,technicianSelfReport};

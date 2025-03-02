@@ -12,6 +12,9 @@ import TechnicianDashboard from '../views/TechnicianDashboard.vue';
 import AdminDashboard from '../views/AdminDashboard.vue';
 import UserProfile from '../views/UserProfile.vue';
 import TicketCategory from '../views/TicketCategory.vue';
+import CategoryReport from '../views/CategoryReport.vue';
+import TechnicianReport from '../views/TechnicianPerformance.vue';
+import TechnicianSelfReport from '../views/TechnicianSelfReport.vue';
 
 const routes = [
   { 
@@ -64,6 +67,25 @@ const routes = [
     component: TicketCategory,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/categoryReport',
+    name: 'categoryReport',
+    component: CategoryReport,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/technicianReport',
+    name: 'technicianReport',
+    component: TechnicianReport,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/technicianSelfReport/:id',
+    name: 'technicianSelfReport',
+    component: TechnicianSelfReport,
+    meta: { requiresAuth: true }
+  },
+  
   { path: '/dashboard',
     name: 'dashboard', 
     component: Dashboard, 
