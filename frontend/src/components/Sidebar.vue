@@ -8,13 +8,14 @@
       <template v-if="role === 'student' || role === 'teacher'">
         
         <li><router-link to="/create-ticket">Create Ticket</router-link></li>
-        <li><router-link to="/ticket/:id">Ticket Details</router-link></li>
+        <li><router-link to="/my-tickets">Your Tickets</router-link></li>
         <li><router-link to="/categoryReport">Category Reports</router-link></li>
         
       </template>
 
       <template v-if="role === 'technician'">
-        <li><router-link to="/technician">Assigned Tickets</router-link></li>
+
+        <li><router-link to="/my-tickets">Assigned Tickets</router-link></li>
         <li><router-link to="/categoryReport">Category Reports</router-link></li>
         <li><router-link to="/technicianSelfReport/:id">Your Performance Report</router-link></li>
 
