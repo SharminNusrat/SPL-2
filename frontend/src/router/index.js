@@ -15,6 +15,7 @@ import TicketCategory from '../views/TicketCategory.vue';
 import CategoryReport from '../views/CategoryReport.vue';
 import TechnicianReport from '../views/TechnicianPerformance.vue';
 import TechnicianSelfReport from '../views/TechnicianSelfReport.vue';
+import ForgotPassword from '../views/ForgotPassword.vue';
 
 const routes = [
   { 
@@ -25,6 +26,12 @@ const routes = [
     path: '/login', 
     name: 'login',
     component: LoginPage 
+  },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component
+    : ForgotPassword
   },
   { 
     path: '/register', 

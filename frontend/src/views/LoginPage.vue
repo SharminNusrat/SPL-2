@@ -28,6 +28,9 @@
                   required
                 />
               </div>
+              <div class="mb-3 text-end">
+                <router-link to="/forgot-password">Forgot password?</router-link>
+              </div>
               <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
             <p class="text-center mt-3">
