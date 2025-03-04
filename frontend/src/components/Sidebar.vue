@@ -45,6 +45,7 @@ export default {
     logout() {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userRole");
+      localStorage.removeItem("userId");
       this.$router.push("/login");
     },
   },

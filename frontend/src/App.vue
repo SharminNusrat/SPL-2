@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <Header />
-    <router-view /> 
+    <main>
+      <router-view />
+    </main>
     <Footer />
   </div>
 </template>
@@ -20,9 +22,17 @@ export default {
 </script>
 
 <style>
-/* Global styles (optional) */
-body {
+/* Ensure full height for the layout */
+html, body, #app {
+  height: 100%;
   margin: 0;
-  font-family: Arial, sans-serif;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main content area should take up all available space */
+main {
+  flex: 1;
 }
 </style>

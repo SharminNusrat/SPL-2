@@ -16,11 +16,13 @@ import CategoryReport from '../views/CategoryReport.vue';
 import TechnicianReport from '../views/TechnicianPerformance.vue';
 import TechnicianSelfReport from '../views/TechnicianSelfReport.vue';
 import ForgotPassword from '../views/ForgotPassword.vue';
+import HomePage from '../views/HomePage.vue';
 
 const routes = [
   { 
     path: '/', 
-    redirect: '/login' 
+    name: 'home',
+    component: HomePage
   },
   { 
     path: '/login', 

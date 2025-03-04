@@ -12,7 +12,7 @@
           <div v-for="(value, key) in profile.roleData" :key="key">
             <p><strong>{{ key }}:</strong> {{ value }}</p>
           </div>
-          <button @click="editing = true" class="btn btn-link">Edit Profile</button>
+          <button @click="editing = true" class="btn btn-primary">Edit Profile</button>
         </div>
         
         <form v-else @submit.prevent="updateProfile">
