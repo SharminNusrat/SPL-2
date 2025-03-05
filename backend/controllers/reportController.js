@@ -109,11 +109,13 @@ const technicianSelfReport = (req, res) => {
       
       // Format the data for the frontend
       const report = results.map(day => ({
-        date: day.ticket_date.toISOString().split('T')[0], // Format: YYYY-MM-DD
+        ticket_date: day.ticket_date.toISOString().split('T')[0], // Format: YYYY-MM-DD
         assigned: day.assigned || 0,
         resolved: day.resolved || 0
-      }));
-      
+    }));
+      console.log("Technician ID:", technicianId);
+      console.log("Date Range:", range);
+      console.log("Query Results:", results);
       return res.status(200).json({ report });
     });
   };

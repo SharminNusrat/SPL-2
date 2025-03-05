@@ -17,11 +17,14 @@
 
       <div class="chart-container">
         <line-chart 
-          :chart-data="chartData" 
+          v-if="chartData.labels.length > 0"
+          :chart-data="chartData"
           :options="chartOptions"
-          :key="currentRange"
+          :key="chartKey"
         ></line-chart>
+        <p v-else>No data available for the selected range.</p>
       </div>
+
 
       <div class="stats-summary">
         <div class="stat-card">
@@ -53,83 +56,130 @@ export default {
     LineChart: Line
   },
   data() {
-    return {
-      technicianData: [],
-      loading: true,
-      error: null,
-      token: localStorage.getItem("accessToken"),
-      userRole: localStorage.getItem("userRole"),
-      //userId: parseInt(localStorage.getItem("userId")) || null,
-      userId:localStorage.getItem("userId"),
-      //console.log("Logged-in User ID:", userId);
-
-      currentRange: '30d', 
-      timeRanges: [
-        { label: '30 Days', value: '30d' },
-        { label: '3 Months', value: '3m' },
-        { label: '6 Months', value: '6m' },
-        { label: '1 Year', value: '1y' }
-      ]
-    };
-  },
-  computed: {
-    chartData() {
-      return {
-        labels: this.technicianData.map(day => day.date),
-        datasets: [
-          {
-            label: 'Tickets Assigned',
-            borderColor: '#36A2EB',
-            backgroundColor: 'rgba(54, 162, 235, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.2,
-            data: this.technicianData.map(day => day.assigned)
-          },
-          {
-            label: 'Tickets Resolved',
-            borderColor: '#4CAF50',
-            backgroundColor: 'rgba(76, 175, 80, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.2,
-            data: this.technicianData.map(day => day.resolved)
+  return {
+    technicianData: [],
+    loading: true,
+    error: null,
+    token: localStorage.getItem("accessToken"),
+    userRole: localStorage.getItem("userRole"),
+    userId: localStorage.getItem("userId"),
+    currentRange: '30d',
+    chartKey: 0,
+    timeRanges: [
+      { label: '30 Days', value: '30d' },
+      { label: '3 Months', value: '3m' },
+      { label: '6 Months', value: '6m' },
+      { label: '1 Year', value: '1y' }
+    ],
+    chartOptions: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top'
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            autoSkip: true,
+            maxTicksLimit: 10
           }
-        ]
-      };
+        },
+        y: {
+          beginAtZero: true
+        }
+      }
     }
+  };
+},
+
+  computed: {
+    totalAssigned() {
+      return this.technicianData.reduce((sum, day) => sum + (day.assigned || 0), 0);
+    },
+    totalResolved() {
+      return this.technicianData.reduce((sum, day) => sum + (day.resolved || 0), 0);
+    },
+    averageResolutionRate() {
+      return this.totalAssigned === 0 ? 0 : ((this.totalResolved / this.totalAssigned) * 100).toFixed(2);
+    },
+    chartData() {
+      if (!this.technicianData || this.technicianData.length === 0) {
+    return { labels: [], datasets: [{ label: "No Data", data: [] }] };
+  }
+  const formattedData = this.technicianData.map(day => {
+    let formattedDate = "Invalid Date";
+    if (day.ticket_date) {
+      try {
+        formattedDate = new Date(day.ticket_date).toISOString().split("T")[0];
+      } catch (error) {
+        console.error("Date parsing error:", error);
+      }
+    }
+    return { ...day, date: formattedDate };
+  });
+
+  return {
+    labels: formattedData.map(day => day.date),
+    datasets: [
+      {
+        label: "Tickets Assigned",
+        borderColor: "#36A2EB",
+        backgroundColor: "rgba(54, 162, 235, 0.1)",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.2,
+        data: formattedData.map(day => day.assigned || 0),
+      },
+      {
+        label: "Tickets Resolved",
+        borderColor: "#4CAF50",
+        backgroundColor: "rgba(76, 175, 80, 0.1)",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.2,
+        data: formattedData.map(day => day.resolved || 0),
+      },
+    ],
+  };
+}
   },
   methods: {
-    async fetchData(range = '30d') {
-      try {
-        this.loading = true;
-        const response = await fetch(`/api/tickets/technician-self-report/${this.userId}?range=${range}`, {
-          headers: {
-            'Authorization': `Bearer ${this.token}`
-          }
-        });
+    async fetchData(range = "30d") {
+  try {
+    this.loading = true;
+    const response = await fetch(`/api/tickets/technician-self-report/${this.userId}?range=${range}`, {
+      headers: { Authorization: `Bearer ${this.token}` },
+    });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch technician performance data');
-        }
+    if (!response.ok) throw new Error("Failed to fetch technician performance data");
 
-        const data = await response.json();
-        this.technicianData = data.report;
-        this.loading = false;
-      } catch (err) {
-        this.error = err.message;
-        this.loading = false;
-      }
-    },
+    const data = await response.json();
+    this.technicianData = Array.isArray(data.report) ? data.report.map(item => ({
+      ticket_date: item.ticket_date || null,
+      assigned: item.assigned || 0,
+      resolved: item.resolved || 0
+    })) : [];
+
+    this.error = null;
+  } catch (err) {
+    console.error("Fetch Error:", err);
+    this.error = err.message;
+    this.technicianData = []; // Ensure it's an empty array, not undefined
+  } finally {
+    this.loading = false;
+    this.chartKey++; // Force re-render
+  }
+},
+
     setTimeRange(range) {
       this.currentRange = range;
       this.fetchData(range);
     }
   },
   mounted() {
-    console.log("Current Role:", this.userRole);
-    console.log("Logged-in User ID:", this.userId);
-
     if (this.userRole === 'admin' || this.userId) {
       this.fetchData();
     } else {

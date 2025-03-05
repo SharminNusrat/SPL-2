@@ -10,13 +10,13 @@
   </div>
 </template>
 
-<script>
+<!-- <script>
 import Sidebar from "../components/Sidebar.vue";
 
 export default {
   components: { Sidebar },
 };
-</script>
+</script> -->
 
 <style>
 .dashboard {
