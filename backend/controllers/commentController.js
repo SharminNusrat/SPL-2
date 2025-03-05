@@ -189,7 +189,7 @@ const getAllCommentOnATicket= (req, res) => {
     const { ticket_id } = req.params;
 
     const query = `
-        SELECT c.id, c.content, c.created_at, u.fname AS author
+        SELECT c.id, c.user_id, c.content, c.created_at, u.fname AS author
         FROM comment c
         JOIN users u ON c.user_id = u.id
         WHERE c.ticket_id = ?

@@ -45,6 +45,9 @@
             <p>{{ comment.content }}</p> 
             <p><em>{{ formatDate(comment.created_at) }}</em></p> 
 
+            
+            <!-- <p>Logged-in User ID: {{ loggedInUserId }} | Comment User ID: {{ comment.user_id }}</p> -->
+
             <div v-if="comment.user_id == loggedInUserId">
               <button @click="editComment(comment)">✏️ Edit</button>
               <button @click="deleteComment(comment.id)">🗑️ Delete</button>
@@ -73,7 +76,7 @@
     data() {
       return {
         ticket: null,
-        loggedInUserId: localStorage.getItem('user_id') || null,
+        loggedInUserId: localStorage.getItem('userId') || null,
         comments: [],
         newComment: "",
         newStatus: "",
