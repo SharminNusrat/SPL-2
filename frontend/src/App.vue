@@ -1,14 +1,10 @@
 <template>
   <div id="app">
     <Header />
-    <!-- Main layout that wraps Sidebar and Content -->
     <div class="app-container">
-      <!-- Sidebar for authenticated users -->
       <Sidebar v-if="showSidebar" />
-
-      <!-- Main content area with conditional sidebar -->
       <main :class="{ 'content-with-sidebar': showSidebar, 'full-content': !showSidebar }">
-        <router-view />
+        <router-view @login-success="updateUserRole" />
       </main>
     </div>
     <Footer />
@@ -19,7 +15,7 @@
 import Header from './components/Header.vue';
 import Footer from './components/Footer.vue';
 import Sidebar from './components/Sidebar.vue';
-import { computed, ref, onMounted } from "vue";
+import { ref, watch, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 
 export default {
@@ -32,17 +28,32 @@ export default {
   setup() {
     const route = useRoute();
     const userRole = ref(null);
+    const showSidebar = ref(false);
+    
 
     // Routes where sidebar shouldn't appear
     const hideSidebarRoutes = ["/", "/login", "/register", "/verify", "/forgot-password"];
 
-    onMounted(() => {
-      userRole.value = localStorage.getItem("userRole"); // Get user role from local storage
+    // Get user role from local storage
+    userRole.value = localStorage.getItem("userRole");
+
+    // Watch for route or userRole changes
+    watchEffect(() => {
+      showSidebar.value = !hideSidebarRoutes.includes(route.path) && userRole.value !== null && userRole.value !== undefined;
     });
+    
+    watch(userRole, () => {
+      showSidebar.value = !hideSidebarRoutes.includes(route.path) && userRole.value;
+    });
+    const updateUserRole = (role) => {
+      userRole.value = role;
+    };
 
     return {
-      showSidebar: computed(() => !hideSidebarRoutes.includes(route.path) && userRole.value),
+      showSidebar,
+      updateUserRole
     };
+      
   }
 };
 </script>
@@ -68,9 +79,9 @@ html, body, #app {
 .content-with-sidebar {
   flex-grow: 1;
   padding: 20px;
-  margin-left: 250px; /* Sidebar width */
-  overflow-y: auto; /* Only this part will scroll */
-  height: calc(100vh - 120px); /* Adjust for header and footer height */
+  margin-left: 250px; 
+  overflow-y: auto;  
+  height: calc(100vh - 120px); 
 }
 
 /* Full content when no sidebar */
@@ -78,6 +89,6 @@ html, body, #app {
   width: 100%;
   padding: 20px;
   overflow-y: auto;
-  height: calc(100vh - 120px); /* Adjust for header and footer height */
+  height: calc(100vh - 120px); 
 }
 </style>

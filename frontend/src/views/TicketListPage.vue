@@ -196,10 +196,10 @@ export default {
       return dateString ? new Date(dateString).toLocaleDateString() : "No Date";
     },
     applyFilters() {
-      this.currentPage = 1; // Reset pagination when filtering
+      this.currentPage = 1; 
     },
     applySorting() {
-      this.currentPage = 1; // Reset pagination when sorting
+      this.currentPage = 1; 
     },
     nextPage() {
       if (this.currentPage < this.totalPages) this.currentPage++;

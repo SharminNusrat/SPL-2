@@ -110,7 +110,6 @@
   .container {
     max-width: 600px;
     margin: auto;
-    background: #f8f9fa;
     padding: 20px;
     border-radius: 10px;
   }

@@ -1,4 +1,3 @@
-// File: src/views/TechnicianDashboard.vue
 <template>
   <div class="dashboard">
     <Sidebar />
