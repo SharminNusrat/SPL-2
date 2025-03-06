@@ -17,6 +17,7 @@
 
         <li><router-link to="/my-tickets">Assigned Tickets</router-link></li>
         <li><router-link to="/categoryReport">Category Reports</router-link></li>
+        <li><router-link to="/technicianAvailability">Availability Status</router-link></li>
         <li><router-link to="/technicianSelfReport/:id">Your Performance Report</router-link></li>
 
       </template>
