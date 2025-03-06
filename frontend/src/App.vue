@@ -4,7 +4,10 @@
     <div class="app-container">
       <Sidebar v-if="showSidebar" />
       <main :class="{ 'content-with-sidebar': showSidebar, 'full-content': !showSidebar }">
-        <router-view @login-success="updateUserRole" />
+        <router-view 
+        @login-success="updateUserRole"
+        @verify-success="updateUserRole" 
+        />
       </main>
     </div>
     <Footer />

@@ -54,6 +54,7 @@
             localStorage.setItem("isVerified", "true");
             localStorage.setItem("accessToken", res.data.token);
             localStorage.setItem("userRole", res.data.role); // Store role
+            this.$emit("verify-success", res.data.role);
             alert("Email verified successfully!");
             this.$router.push("/dashboard");
           } else {
