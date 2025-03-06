@@ -14,7 +14,7 @@ const createTicket = (req, res) => {
         return res.status(400).json({ error: 'All fields are required.' });
     }
 
-    
+    // Get category name first
     const getCategoryQuery = `
         SELECT name FROM category WHERE id = ?
     `;
@@ -31,7 +31,8 @@ const createTicket = (req, res) => {
 
         const categoryName = categoryResults[0].name;
         
-        const getTechnicianQuery = `SELECT 
+        // Check for available technicians with the required expertise
+        const getAvailableTechniciansQuery = `SELECT 
             u.id
             FROM 
                 users u
@@ -56,31 +57,39 @@ const createTicket = (req, res) => {
                     assigned_to
                 ) t 
                 ON u.id = t.assigned_to
+            LEFT JOIN
+                user_details ud3
+                ON u.id = ud3.user_id
+                AND ud3.details_key = 'availability'
             WHERE 
                 u.role = 'technician'
+                AND (ud3.details_value = 'available' OR ud3.details_value IS NULL)
             ORDER BY 
                 t.open_tickets ASC,
                 COALESCE(ud2.details_value, '1970-01-01') ASC
             LIMIT 1;
         `;
 
-        db.query(getTechnicianQuery, [categoryName], (err, results) => {
+        db.query(getAvailableTechniciansQuery, [categoryName], (err, results) => {
             if (err) {
-                console.error('Error fetching technician for load balancing:', err);
+                console.error('Error fetching available technicians:', err);
                 return res.status(500).json({ error: 'Database error while finding technician.' });
             }
 
-            if (results.length === 0) {
-                return res.status(404).json({ error: 'No technicians available with required expertise.' });
+            let assigned_to = null;
+            let ticketStatus = 'Open'; // Default status is Open
+
+            // If an available technician is found, assign the ticket
+            if (results.length > 0) {
+                assigned_to = results[0].id;
+                ticketStatus = 'In-Progress';
             }
 
-            const assigned_to = results[0].id;
-
+            // Create the ticket with appropriate status and assignment
             const insertTicketQuery = `
-                INSERT INTO ticket (user_id, category_id, computer_id, title, roomNumber, description, ticket_status, created_at, assigned_to,updated_at)
+                INSERT INTO ticket (user_id, category_id, computer_id, title, roomNumber, description, ticket_status, created_at, assigned_to, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
-            const ticketStatus = 'In-Progress';
             
             db.query(
                 insertTicketQuery,
@@ -91,26 +100,138 @@ const createTicket = (req, res) => {
                         return res.status(500).json({ error: 'Database error while creating ticket.' });
                     }
 
+                    // Only update last_assigned_at if a technician was assigned
+                    if (assigned_to) {
+                        const updateLastAssignedQuery = `
+                            INSERT INTO user_details (user_id, details_key, details_value)
+                            VALUES (?, 'last_assigned_at', NOW())
+                            ON DUPLICATE KEY UPDATE details_value = NOW();
+                        `;
+
+                        db.query(updateLastAssignedQuery, [assigned_to], (err) => {
+                            if (err) {
+                                console.error('Error updating last_assigned_at:', err);
+                                // Continue despite error as the ticket is already created
+                            }
+                        });
+                    }
+
+                    // Respond with appropriate message based on assignment status
+                    const responseMessage = assigned_to 
+                        ? 'Ticket created and assigned to technician successfully' 
+                        : 'Ticket created successfully and waiting for available technician';
+
+                    return res.status(201).json({
+                        message: responseMessage,
+                        ticket_id: result.insertId,
+                        ticket_status: ticketStatus,
+                        assigned_to: assigned_to,
+                    });
+                }
+            );
+        });
+    });
+};
+
+// Implement a function to process the queue of unassigned tickets
+const processTicketQueue = () => {
+    // Get all unassigned tickets (status = 'Open' and assigned_to is NULL)
+    const getUnassignedTicketsQuery = `
+        SELECT t.id, t.category_id, c.name as category_name
+        FROM ticket t
+        JOIN category c ON t.category_id = c.id
+        WHERE t.ticket_status = 'Open' AND (t.assigned_to IS NULL OR t.assigned_to = 0)
+        ORDER BY t.created_at ASC
+    `;
+
+    db.query(getUnassignedTicketsQuery, (err, tickets) => {
+        if (err) {
+            console.error('Error fetching unassigned tickets:', err);
+            return;
+        }
+
+        // Process each unassigned ticket
+        tickets.forEach(ticket => {
+            // Find available technician for this ticket's category
+            const findTechnicianQuery = `SELECT 
+                u.id
+                FROM 
+                    users u
+                JOIN 
+                    user_details ud1 
+                    ON u.id = ud1.user_id 
+                    AND ud1.details_key = 'expertise' 
+                    AND ud1.details_value = ?
+                LEFT JOIN 
+                    user_details ud2 
+                    ON u.id = ud2.user_id 
+                    AND ud2.details_key = 'last_assigned_at'
+                LEFT JOIN 
+                    (SELECT 
+                        assigned_to, 
+                        COUNT(*) AS open_tickets 
+                    FROM 
+                        ticket 
+                    WHERE 
+                        ticket_status = 'Open' OR ticket_status = 'In-Progress'
+                    GROUP BY 
+                        assigned_to
+                    ) t 
+                    ON u.id = t.assigned_to
+                LEFT JOIN
+                    user_details ud3
+                    ON u.id = ud3.user_id
+                    AND ud3.details_key = 'availability'
+                WHERE 
+                    u.role = 'technician'
+                    AND (ud3.details_value = 'available' OR ud3.details_value IS NULL)
+                ORDER BY 
+                    t.open_tickets ASC,
+                    COALESCE(ud2.details_value, '1970-01-01') ASC
+                LIMIT 1;
+            `;
+
+            db.query(findTechnicianQuery, [ticket.category_name], (err, technicians) => {
+                if (err || technicians.length === 0) {
+                    // No technician available yet, leave in queue
+                    return;
+                }
+
+                const technician_id = technicians[0].id;
+
+                // Assign the ticket to the technician
+                const updateTicketQuery = `
+                    UPDATE ticket 
+                    SET assigned_to = ?, ticket_status = 'In-Progress', updated_at = NOW() 
+                    WHERE id = ?
+                `;
+
+                db.query(updateTicketQuery, [technician_id, ticket.id], (err) => {
+                    if (err) {
+                        console.error(`Error assigning ticket ${ticket.id}:`, err);
+                        return;
+                    }
+
+                    // Update technician's last_assigned_at
                     const updateLastAssignedQuery = `
                         INSERT INTO user_details (user_id, details_key, details_value)
                         VALUES (?, 'last_assigned_at', NOW())
                         ON DUPLICATE KEY UPDATE details_value = NOW();
                     `;
 
-                    db.query(updateLastAssignedQuery, [assigned_to], (err) => {
+                    db.query(updateLastAssignedQuery, [technician_id], (err) => {
                         if (err) {
                             console.error('Error updating last_assigned_at:', err);
-                            return res.status(500).json({ error: 'Database error while updating technician info.' });
                         }
-
-                        return res.status(201).json({
-                            message: 'Ticket created successfully',
-                            ticket_id: result.insertId,
-                            assigned_to: assigned_to,
-                        });
+                        
+                        console.log(`Ticket ${ticket.id} assigned to technician ${technician_id}`);
+                        
+                        // You can implement notification logic here if needed
+                        // notifyTechnician(technician_id, ticket.id);
+                        // notifyUser(ticket.user_id, 'Your ticket has been assigned to a technician');
                     });
-                }
-            );
+                });
+            });
         });
     });
 };
@@ -262,4 +383,4 @@ const getTicketsByUser = (req, res) => {
     });
 };
 
-module.exports = {createTicket,updateTicketStatus,verifyTicket,getAllTickets, getTicketbyId,getTicketsByUser};
+module.exports = {createTicket,updateTicketStatus,verifyTicket,getAllTickets, getTicketbyId,getTicketsByUser,processTicketQueue};
