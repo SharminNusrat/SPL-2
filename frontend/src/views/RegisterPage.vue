@@ -126,6 +126,14 @@
             <option value="networking">Networking</option>
           </select>
         </div>
+        <div class="form-group">
+          <label for="availability">Availability Status</label>
+          <select id="availability" v-model="formData.roleData.availability" required>
+            <option value="">Select your Availability Status</option>
+            <option value="available">available</option>
+            <option value="unavailable">unavailable</option>
+          </select>
+        </div>
       </div>
 
       <button type="submit">Register</button>

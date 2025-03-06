@@ -34,7 +34,6 @@
       };
     },
     mounted() {
-      // Fetch current availability status when component mounts
       this.fetchAvailabilityStatus();
     },
     methods: {
@@ -48,7 +47,6 @@
           this.isAvailable = response.data.availability === 'available';
         } catch (error) {
           console.error('Error fetching availability status:', error);
-          // Default to available if error occurs
           this.isAvailable = true;
         }
       },
