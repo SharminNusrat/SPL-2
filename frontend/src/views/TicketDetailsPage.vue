@@ -28,7 +28,6 @@
 
         <div v-if="attachments.length">
           <h4>Attachments:</h4>
-          <!-- <p>Debug: {{ attachments }}</p>  -->
           <div v-for="file in attachments" :key="file.id">
             <a :href="getFileUrl(file.path)" target="_blank">
               <img :src="getFileUrl(file.path)" alt="Attachment" width="200" />
@@ -47,7 +46,7 @@
             <p>{{ comment.content }}</p> 
             <p><em>{{ formatDate(comment.created_at) }}</em></p> 
 
-            
+
             <!-- <p>Logged-in User ID: {{ loggedInUserId }} | Comment User ID: {{ comment.user_id }}</p> -->
 
             <div v-if="comment.user_id == loggedInUserId">
@@ -58,7 +57,6 @@
         </div>
         <p v-else>No comments yet.</p> 
 
-        <!-- Add Comment Form -->
         <form @submit.prevent="submitComment" class="mt-3">
           <div class="mb-3">
             <textarea v-model="newComment" class="form-control" placeholder="Add a comment..." required></textarea>
@@ -294,9 +292,6 @@
           const commentData = {
             content: commentText 
           };
-
-          // console.log('Submitting Comment Data:', commentData);
-          // console.log('Fetching API:', `/api/tickets/tickets/${this.ticket.id}/comments`);
 
           const response = await fetch(`/api/tickets/tickets/${this.ticket.id}/comments`, {
             method: "POST",

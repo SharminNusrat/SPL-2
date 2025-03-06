@@ -2,7 +2,6 @@
     <div class="container mt-4">
       <h2>Create a New Ticket</h2>
   
-      <!-- Ticket Submission Form -->
       <form @submit.prevent="submitTicket">
         <div class="mb-3">
           <label class="form-label">Title</label>
@@ -30,13 +29,12 @@
           <input v-model="ticket.computer_id" type="text" class="form-control" required />
         </div>
   
-        <!-- File Upload -->
         <div class="mb-3">
           <label class="form-label">Attach File (Optional)</label>
           <input type="file" class="form-control" @change="handleFileUpload" />
         </div>
   
-        <button type="submit" class="btn btn-success">Submit Ticket</button>
+        <button type="submit" class="btn btn-success" :disabled="isSubmitting">{{ isSubmitting ? "Submitting..." : "Submit Ticket" }}</button>
       </form>
     </div>
   </template>
@@ -56,6 +54,7 @@
         file: null,
         ticketCreated: false,
         createdTicketId: null,
+        isSubmitting: false,
       };
     },
     methods: {
@@ -81,9 +80,12 @@
         this.file = event.target.files[0];
       },
       async submitTicket() {
+        if(this.isSubmitting) return; 
+
+        this.isSubmitting = true;
+
         try {
           const token = localStorage.getItem('accessToken');
-          // Submit ticket details first
           const response = await fetch("/api/tickets/ticket", {
             method: "POST",
             headers: { 
@@ -102,16 +104,15 @@
             this.createdTicketId = data.ticket_id;
             alert("Ticket created successfully!");
   
-            // If file is uploaded, send it separately
             if (this.file) {
               this.uploadFile();
             }
-  
-            // Fetch comments for the created ticket
-            this.fetchComments();
+            this.resetForm();
           }
         } catch (error) {
           console.error("Error submitting ticket:", error);
+        } finally {
+          this.isSubmitting = false;
         }
       },
       async uploadFile() {
@@ -138,6 +139,18 @@
           console.error("Error uploading file:", error);
         }
       },
+      resetForm() {
+        this.ticket = {
+          title: "",
+          description: "",
+          category_id: "",
+          roomNumber: "",
+          computer_id: ""
+        };
+        this.file = null;
+        this.ticketCreated = false;
+        this.createdTicketId = null;
+      },
       formatDate(dateString) {
         return new Date(dateString).toLocaleString();
       }
@@ -152,14 +165,5 @@
   .container {
     max-width: 700px;
   }
-  /* select.form-select {
-    max-height: 200px; 
-    overflow-y: auto;  
-  }
-  .form-select {
-    position: relative;
-    z-index: 1000; 
-  } */
-
   </style>
   
