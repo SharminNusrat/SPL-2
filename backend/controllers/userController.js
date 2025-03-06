@@ -185,7 +185,21 @@ const verifyMail = (req, res) => {
                     console.log(err);
                     return res.status(500).json({ status: 'error', error: 'Failed to update user data' });
                 }
+                if (user.role === 'technician') {
+                    const qAdminEmail = 'SELECT email FROM users WHERE role = "admin" LIMIT 1';
 
+                    db.query(qAdminEmail, (err, result) => {
+                        if (err) {
+                            console.log("Error fetching admin email:", err);
+                        } else if (result.length > 0) {
+                            const adminEmail = result[0].email;
+                            const subject = "New Technician Verified";
+                            const content = `A new technician (${user.fname} ${user.lname}) has successfully add to the syatem. Please review their details.`;
+
+                            sendMail(adminEmail, subject, content);
+                        }
+                    });
+                }
                 // Generate token after successful verification
                 const token = jwt.sign(
                     { id: user.id, role: user.role }, 
