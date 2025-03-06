@@ -2,14 +2,8 @@
   <div class="container mt-4">
     <h2>All Submitted Tickets</h2>
 
-    <!-- Filters & Sorting -->
     <div class="d-flex justify-content-between mb-3">
-      <input 
-        v-model="searchQuery" 
-        type="text" 
-        class="form-control w-50" 
-        placeholder="Search tickets..."
-      >
+      <input v-model="searchQuery" type="text" class="form-control w-50" placeholder="Search tickets...">
       <select v-model="filterStatus" class="form-select w-25" @change="applyFilters">
         <option value="">All Status</option>
         <option value="Open">Open</option>
@@ -24,7 +18,6 @@
       </select>
     </div>
 
-    <!-- Ticket Table -->
     <table class="table table-striped">
       <thead>
         <tr>
@@ -49,14 +42,10 @@
           <td>{{ ticket.assigned_to_name ? ticket.assigned_to_name : 'Unassigned' }}</td>
           <td>{{ ticket.created_by_name }}</td>
           <td>{{ formatDate(ticket.created_at) }}</td>
-          <!-- <td>
-          <button @click="viewTicketDetails(ticket.id)" class="btn btn-primary">View Details</button>
-          </td> -->
         </tr>
       </tbody>
     </table>
 
-    <!-- Pagination -->
     <div class="d-flex justify-content-center mt-3">
       <button @click="prevPage" :disabled="currentPage === 1" class="btn btn-secondary me-2">Previous</button>
       <span>Page {{ currentPage }} of {{ totalPages }}</span>
@@ -123,7 +112,6 @@ export default {
         const userIds = new Set();
         const assignedIds = new Set();
 
-        // Collect all unique user IDs from tickets
         this.tickets.forEach(ticket => {
           if (ticket.user_id) userIds.add(ticket.user_id);
           if (ticket.assigned_to) assignedIds.add(ticket.assigned_to);
@@ -142,7 +130,6 @@ export default {
         const userResults = await Promise.all(userPromises);
         const assignedResults = await Promise.all(assignedPromises);
 
-        // Create mapping of user IDs to names
         const userMap = {};
         userResults.forEach(({ id, data }) => {
           userMap[id] = data.fname + " " + data.lname;
@@ -153,7 +140,6 @@ export default {
           assignedMap[id] = data.fname + " " + data.lname;
         });
 
-        // Update tickets with names
         this.tickets = this.tickets.map(ticket => ({
           ...ticket,
           created_by_name: userMap[ticket.user_id] || "Unknown",

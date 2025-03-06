@@ -5,54 +5,23 @@
     <form @submit.prevent="handleSubmit">
       <div class="form-group">
         <label for="fname">First Name</label>
-        <input
-          type="text"
-          id="name"
-          v-model="formData.fname"
-          placeholder="Enter your first name"
-          required
-        />
+        <input type="text" id="name" v-model="formData.fname" placeholder="Enter your first name" required/>
       </div>
       <div class="form-group">
         <label for="lname">Last Name</label>
-        <input
-          type="text"
-          id="name"
-          v-model="formData.lname"
-          placeholder="Enter your last name"
-          required
-        />
+        <input type="text" id="name" v-model="formData.lname" placeholder="Enter your last name" required/>
       </div>
       <div class="form-group">
         <label for="phn_no">Phone Number</label>
-        <input
-          type="text"
-          id="name"
-          v-model="formData.phn_no"
-          placeholder="Enter your phone number"
-          required
-        />
+        <input type="text" id="name" v-model="formData.phn_no" placeholder="Enter your phone number" required/>
       </div>
       <div class="form-group">
         <label for="email">Email</label>
-        <input
-          type="email"
-          id="email"
-          v-model="formData.email"
-          placeholder="Enter your email"
-          required
-        />
+        <input type="email" id="email" v-model="formData.email" placeholder="Enter your email" required/>
       </div>
-
       <div class="form-group">
         <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          v-model="formData.password"
-          placeholder="Enter your password"
-          required
-        />
+        <input type="password" id="password" v-model="formData.password" placeholder="Enter your password" required/>
       </div>
 
       <div class="form-group">
@@ -65,57 +34,30 @@
         </select>
       </div>
 
-      <!-- Conditional Fields for Student -->
       <div v-if="formData.role === 'student'">
         <div class="form-group">
           <label for="roll">Roll</label>
-          <input
-            type="text"
-            id="roll"
-            v-model="formData.roleData.roll"
-            placeholder="Enter your roll number"
-            required
-          />
+          <input type="text" id="roll" v-model="formData.roleData.roll" placeholder="Enter your roll number" required/>
         </div>
 
         <div class="form-group">
           <label for="registration">Registration Number</label>
-          <input
-            type="text"
-            id="registration"
-            v-model="formData.roleData.registration"
-            placeholder="Enter your registration number"
-            required
-          />
+          <input type="text" id="registration" v-model="formData.roleData.registration" placeholder="Enter your registration number" required/>
         </div>
 
         <div class="form-group">
           <label for="batch">Batch</label>
-          <input
-            type="text"
-            id="batch"
-            v-model="formData.roleData.batch"
-            placeholder="Enter your batch"
-            required
-          />
+          <input type="text" id="batch" v-model="formData.roleData.batch" placeholder="Enter your batch" required/>
         </div>
       </div>
 
-      <!-- Conditional Fields for Teacher -->
       <div v-if="formData.role === 'teacher'">
         <div class="form-group">
           <label for="designation">Designation</label>
-          <input
-            type="text"
-            id="designation"
-            v-model="formData.roleData.designation"
-            placeholder="Enter your designation"
-            required
-          />
+          <input type="text" id="designation" v-model="formData.roleData.designation" placeholder="Enter your designation" required/>
         </div>
       </div>
 
-      <!-- Conditional Fields for Technician -->
       <div v-if="formData.role === 'technician'">
         <div class="form-group">
           <label for="expertise">Expertise</label>
