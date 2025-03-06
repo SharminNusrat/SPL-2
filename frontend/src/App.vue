@@ -4,7 +4,10 @@
     <div class="app-container">
       <Sidebar v-if="showSidebar" />
       <main :class="{ 'content-with-sidebar': showSidebar, 'full-content': !showSidebar }">
-        <router-view @login-success="updateUserRole" />
+        <router-view 
+        @login-success="updateUserRole"
+        @verify-success="updateUserRole" 
+        />
       </main>
     </div>
     <Footer />
@@ -30,14 +33,10 @@ export default {
     const userRole = ref(null);
     const showSidebar = ref(false);
     
-
-    // Routes where sidebar shouldn't appear
     const hideSidebarRoutes = ["/", "/login", "/register", "/verify", "/forgot-password"];
 
-    // Get user role from local storage
     userRole.value = localStorage.getItem("userRole");
 
-    // Watch for route or userRole changes
     watchEffect(() => {
       showSidebar.value = !hideSidebarRoutes.includes(route.path) && userRole.value !== null && userRole.value !== undefined;
     });
@@ -59,7 +58,7 @@ export default {
 </script>
 
 <style>
-/* Full height for the layout */
+
 html, body, #app {
   height: 100%;
   margin: 0;
@@ -68,14 +67,13 @@ html, body, #app {
   flex-direction: column;
 }
 
-/* Main layout container */
+
 .app-container {
   display: flex;
-  flex: 1; /* This makes the content take all available space */
+  flex: 1; 
   overflow: hidden;
 }
 
-/* Sidebar + Content layout */
 .content-with-sidebar {
   flex-grow: 1;
   padding: 20px;
@@ -84,7 +82,7 @@ html, body, #app {
   height: calc(100vh - 120px); 
 }
 
-/* Full content when no sidebar */
+
 .full-content {
   width: 100%;
   padding: 20px;

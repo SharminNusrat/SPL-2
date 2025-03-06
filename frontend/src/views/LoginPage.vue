@@ -89,31 +89,6 @@ export default {
         }
       }
     }
-//     async handleLogin() {
-//   try {
-//     const res = await axios.post("/api/user/login", {
-//       email: this.email,
-//       password: this.password,
-//     },
-//     {
-//       withCredentials: true,
-//     });
-
-//     // Store token and redirect user
-//     localStorage.setItem("accessToken", res.data.token);
-//     localStorage.setItem("userId", res.data.id);
-//     localStorage.setItem("userRole", res.data.role);
-    
-//     // Emit login success event with user role
-//     this.$emit('login-success', res.data.role);
-    
-//     alert("Login successful!");
-//     this.$router.replace("/dashboard");
-
-//   } catch (error) {
-//     // ... rest of your error handling code ...
-//   }
-// }
   },
 };
 </script>
