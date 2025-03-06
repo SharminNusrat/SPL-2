@@ -6,6 +6,7 @@
       <router-link to="/login" class="login-btn">Log In</router-link>
     </div>
     <div v-else>
+      <router-link to="/dashboard" class="login-btn">Dashboard</router-link>
       <button @click="logout" class="logout-btn">Log Out</button>
     </div>
   </header>
@@ -20,14 +21,12 @@ export default {
   },
   mounted() {
     this.checkLoginStatus();
-
-    // 2 Second por por check korbe
     this.interval = setInterval(() => {
       this.checkLoginStatus();
     }, 2000);
   },
   beforeUnmount() {
-    clearInterval(this.interval); // Memory leak theke bachate interval clear korte hobe
+    clearInterval(this.interval); 
   },
   methods: {
     checkLoginStatus() {

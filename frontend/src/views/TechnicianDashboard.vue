@@ -1,4 +1,3 @@
-// File: src/views/TechnicianDashboard.vue
 <template>
   <div class="dashboard">
     <Sidebar />
@@ -9,10 +8,10 @@
   </div>
 </template>
 
-<script>
+<!-- <script>
 import Sidebar from "../components/Sidebar.vue";
 
 export default {
   components: { Sidebar },
 };
-</script>
+</script> -->

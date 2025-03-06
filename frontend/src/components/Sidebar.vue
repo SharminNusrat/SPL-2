@@ -22,7 +22,6 @@
       </template>
 
       <template v-if="role === 'admin'">
-        <!-- <li><router-link to="/admin"></router-link></li> -->
         <li><router-link to="/tickets">All Tickets</router-link></li>
         <li><router-link to="/category">Ticket Categories</router-link></li>
         <li><router-link to="/categoryReport">Category Reports</router-link></li>

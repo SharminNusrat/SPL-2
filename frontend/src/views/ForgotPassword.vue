@@ -1,8 +1,8 @@
 <template>
     <div class="login container d-flex justify-content-center align-items-center vh-100">
       <div class="row w-100">
-        <div class="col-md-6 offset-md-3">
-          <div class="card shadow">
+        <div class="col-md-6">
+          <div class="card">
             <div class="card-body">
               <h3 class="text-center mb-4">Forgot Password</h3>
               
@@ -183,9 +183,6 @@
   </script>
   
   <style>
-  .login {
-    background-color: #f8f9fa;
-  }
   .card {
     border-radius: 10px;
   }

@@ -71,6 +71,7 @@ export default {
         localStorage.setItem("accessToken", res.data.token);
         localStorage.setItem("userId", res.data.id);
         localStorage.setItem("userRole", res.data.role); // Save role
+        this.$emit('login-success', res.data.role);
         alert("Login successful!");
 
         this.$router.replace("/dashboard");
@@ -88,54 +89,61 @@ export default {
         }
       }
     }
+//     async handleLogin() {
+//   try {
+//     const res = await axios.post("/api/user/login", {
+//       email: this.email,
+//       password: this.password,
+//     },
+//     {
+//       withCredentials: true,
+//     });
+
+//     // Store token and redirect user
+//     localStorage.setItem("accessToken", res.data.token);
+//     localStorage.setItem("userId", res.data.id);
+//     localStorage.setItem("userRole", res.data.role);
+    
+//     // Emit login success event with user role
+//     this.$emit('login-success', res.data.role);
+    
+//     alert("Login successful!");
+//     this.$router.replace("/dashboard");
+
+//   } catch (error) {
+//     // ... rest of your error handling code ...
+//   }
+// }
   },
 };
 </script>
 
 <style>
-/* 🌟 Login Page Centering */
-/* 🌟 Login Page Centering */
+
 .login {
   display: flex;
-  justify-content: center; /* Horizontally center */
-  align-items: center; /* Vertically center */
-  min-height: 90vh; /* Adjusted to prevent touching footer */
-  background-color: #f8f9fa; /* Light grey background */
+  justify-content: center; 
+  align-items: center; 
+ 
 }
 
-/* 🌟 Wrapper for Form and Shadow */
 .card-wrapper {
-  position: relative; /* Parent div relative korte hobe */
+  position: relative; 
   display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  padding-bottom: 50px; /* Ensuring distance from footer */
+  justify-content: center; 
+  align-items: center; 
+  padding-bottom: 50px; 
 }
 
-/* 🔥 Shadow er Style */
-.card-shadow {
-  position: absolute;
-  top: 5px; /* Slightly move shadow down */
-  left: 0px;
-  width: calc(100% + 10px); /* Form er width + 10px */
-  height: calc(100% + 10px); /* Form er height + 10px */
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  z-index: -1; /* Jate shadow form er pichone thake */
-}
-
-/* 🌟 Card (Login Form) */
 .card {
-  width: 50vw; /* 50% of viewport width */
-  max-width: 550px; /* Maximum width */
-  min-width: 360px; /* Minimum width */
-  padding: 2rem; /* Inner spacing */
-  background: white; /* Ensuring proper background */
-  position: relative; /* Jate shadow er sathe thik thake */
-  box-shadow: none; /* Default shadow remove kora holo */
+  width: 50vw; 
+  max-width: 550px; 
+  min-width: 360px; 
+  padding: 2rem; 
+  position: relative; 
+  box-shadow: none; 
 }
 
-/* 🌟 Form Elements */
 .card-body {
   width: 100%;
 }

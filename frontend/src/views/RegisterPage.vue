@@ -148,7 +148,6 @@ export default {
   },
   methods: {
     handleRoleChange() {
-      // Reset role-specific data when role changes
       this.formData.roleData = {};
     },
     async handleSubmit() {
