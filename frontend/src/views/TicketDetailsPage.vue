@@ -12,7 +12,7 @@
           <p><strong>Created Date:</strong> {{ formatDate(ticket.created_at) }}</p>
         </div>
 
-        <div v-if="userRole.toLowerCase() === 'technician'">
+        <div v-if="userRole.toLowerCase() === 'technician' && ticket.ticket_status === 'In-Progress'">
           <label for="status">Update Status:</label>
           <select v-model="newStatus" class="form-select">
             <option value="Resolved">Resolved</option>
@@ -34,7 +34,9 @@
               <img :src="getFileUrl(file.path)" alt="Attachment" width="200" />
             </a>
             <br>
-            <button @click="deleteAttachment(file.id, file.path)">🗑️ Delete</button>
+            <div v-if="loggedInUserId === ticketCreatorId">
+              <button @click="deleteAttachment(file.id, file.path)">🗑️ Delete</button>
+            </div>
           </div>
         </div>
   
@@ -44,6 +46,9 @@
             <p><strong>{{ comment.author || "Unknown User" }}:</strong></p> 
             <p>{{ comment.content }}</p> 
             <p><em>{{ formatDate(comment.created_at) }}</em></p> 
+
+            
+            <!-- <p>Logged-in User ID: {{ loggedInUserId }} | Comment User ID: {{ comment.user_id }}</p> -->
 
             <div v-if="comment.user_id == loggedInUserId">
               <button @click="editComment(comment)">✏️ Edit</button>
@@ -73,7 +78,8 @@
     data() {
       return {
         ticket: null,
-        loggedInUserId: localStorage.getItem('user_id') || null,
+        loggedInUserId: localStorage.getItem('userId') || null,
+        ticketCreatorId: null,
         comments: [],
         newComment: "",
         newStatus: "",
@@ -121,6 +127,23 @@
       async fetchAttachments() {
         try {
           const token = localStorage.getItem('accessToken');
+
+          const ticketResponse = await fetch(`/api/tickets/tickets/${this.ticket.id}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const ticketData = await ticketResponse.json();
+          // console.log(ticketData.ticket.user_id);
+          if(!ticketResponse.ok) {
+            console.error('Error fetching ticket details:', ticketData.error);
+            return;
+          }
+          this.ticketCreatorId = String(ticketData.ticket.user_id);
+          
+          // console.log('Ticket creator id: ' + this.ticketCreatorId);
+
           const response = await fetch(`/api/tickets/files/ticket/${this.ticket.id}`, {
             method: 'GET',
             headers: {

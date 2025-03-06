@@ -4,6 +4,12 @@
 
     <!-- Filters & Sorting -->
     <div class="d-flex justify-content-between mb-3">
+      <input 
+        v-model="searchQuery" 
+        type="text" 
+        class="form-control w-50" 
+        placeholder="Search tickets..."
+      >
       <select v-model="filterStatus" class="form-select w-25" @change="applyFilters">
         <option value="">All Status</option>
         <option value="Open">Open</option>
@@ -66,6 +72,7 @@ export default {
       tickets: [],
       assignedToName: "",
       createdByName: "",
+      searchQuery: "",
       filterStatus: "",  
       sortOrder: "asc",
       currentPage: 1,
@@ -75,9 +82,21 @@ export default {
   computed: {
     filteredTickets() {
       let filtered = this.tickets;
+      console.log(filtered);
       if (this.filterStatus) {
         filtered = filtered.filter(ticket => ticket.ticket_status === this.filterStatus);
       }
+
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
+        filtered = filtered.filter(ticket => 
+          (ticket.title && ticket.title.toLowerCase().includes(query)) || 
+          (ticket.created_by_name && ticket.created_by_name.toLowerCase().includes(query)) || 
+          (ticket.assigned_to_name && ticket.assigned_to_name.toLowerCase().includes(query)) ||
+          (ticket.category_name && ticket.category_name.toLowerCase().includes(query))
+        );
+      }
+
       return Array.isArray(filtered) ? filtered : [];
     },
     sortedTickets() {
@@ -185,9 +204,9 @@ export default {
         const data = await response.json();
         console.log("Fetched Tickets API Response:", data); 
         this.tickets = Array.isArray(data.ticket) ? data.ticket : [];
-        console.log("Updated Tickets in Vue:", this.tickets);
         await this.fetchUserNames();
         await this.fetchCategoryNames();
+        console.log("Updated Tickets in Vue:", this.tickets);
       } catch (error) {
         console.error("Error fetching tickets:", error);
       }
