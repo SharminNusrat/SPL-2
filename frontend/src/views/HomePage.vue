@@ -1,13 +1,10 @@
 <template>
   <div class="home-container">
-    <!-- Header Section -->
     <header class="header">
       <h1>LabHelp - IIT Lab Ticketing System</h1>
       <p>A centralized platform for IIT students and faculty to report and resolve lab issues efficiently.</p>
-      <!-- <button class="cta-button">Report an Issue</button> -->
     </header>
 
-    <!-- Features Section -->
     <section class="features">
       <h2>Key Features</h2>
       <div class="feature-list">
