@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const userRoutes = require('./routes/userRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
+const { processTicketQueue } = require('./controllers/ticketController'); 
 
 const db = require('./db-config');
 const cors = require('cors');
@@ -30,6 +31,10 @@ app.use('/api/tickets', ticketRoutes);
 app.get('/', (req, res) => {
     res.send('Hiii!');
 })
+
+
+setInterval(processTicketQueue, 5 * 60 * 1000);
+console.log('Ticket queue processor scheduled to run every 5 minutes');
 
 app.listen(port, (req, res) => {
     console.log(`Server is running at http://localhost:${port}`);
