@@ -525,4 +525,53 @@ const logout = (req, res) => {
     }).status(200).json('User has been logged out!');
 };
 
-module.exports = { register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP };
+
+const getAvailability = (req, res) => {
+    const user_id = req.user.id; 
+    
+    const query = `
+        SELECT details_value as availability
+        FROM user_details
+        WHERE user_id = ? AND details_key = 'availability'
+    `;
+    
+    db.query(query, [user_id], (err, results) => {
+        if (err) {
+            console.error('Error fetching availability status:', err);
+            return res.status(500).json({ error: 'Database error while fetching availability' });
+        }
+        
+        const availability = results.length > 0 ? results[0].availability : 'available';
+        
+        return res.status(200).json({ availability });
+    });
+};
+
+const updateAvailability = (req, res) => {
+    const user_id = req.user.id; 
+    const { availability } = req.body;
+    
+    if (availability !== 'available' && availability !== 'unavailable') {
+        return res.status(400).json({ error: 'Invalid availability value' });
+    }
+    
+    const query = `
+        INSERT INTO user_details (user_id, details_key, details_value)
+        VALUES (?, 'availability', ?)
+        ON DUPLICATE KEY UPDATE details_value = ?
+    `;
+    
+    db.query(query, [user_id, availability, availability], (err, result) => {
+        if (err) {
+            console.error('Error updating availability:', err);
+            return res.status(500).json({ error: 'Database error while updating availability' });
+        }
+        
+        return res.status(200).json({
+            message: `Status updated to ${availability}`,
+            availability
+        });
+    });
+};
+
+module.exports = { register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP,getAvailability,updateAvailability };

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP} = require('../controllers/userController.js');
+const {register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP,getAvailability,updateAvailability} = require('../controllers/userController.js');
 //const authenticateToken = require('../middleware/authMiddleware');
 const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 
@@ -16,6 +16,9 @@ router.get('/user/:id', getUserById);
 // Authenticated routes
 router.get('/profile', authenticateToken, getProfile);
 router.put('/profile/update', authenticateToken, updateProfile);
+
+router.get('/availability', authenticateToken, getAvailability);
+router.post('/availability', authenticateToken, updateAvailability);
 
 
 module.exports = router;
