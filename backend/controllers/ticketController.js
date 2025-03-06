@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const sendMail = require('../utils/sendMail');
 const authenticateToken = require('../middleware/authMiddleware');
 
+
 const createTicket = (req, res) => {
     const { category_id, computer_id, title, roomNumber, description } = req.body;
     const user_id = req.user.id; 
@@ -33,7 +34,7 @@ const createTicket = (req, res) => {
         
         // Check for available technicians with the required expertise
         const getAvailableTechniciansQuery = `SELECT 
-            u.id
+            u.id, u.email
             FROM 
                 users u
             JOIN 
@@ -77,67 +78,130 @@ const createTicket = (req, res) => {
             }
 
             let assigned_to = null;
+            let technicianEmail = null;
             let ticketStatus = 'Open'; // Default status is Open
 
             // If an available technician is found, assign the ticket
             if (results.length > 0) {
                 assigned_to = results[0].id;
+                technicianEmail = results[0].email;
                 ticketStatus = 'In-Progress';
             }
 
-            // Create the ticket with appropriate status and assignment
-            const insertTicketQuery = `
-                INSERT INTO ticket (user_id, category_id, computer_id, title, roomNumber, description, ticket_status, created_at, assigned_to, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `;
+            // Get the student's email
+            const getUserEmailQuery = `SELECT email FROM users WHERE id = ?`;
             
-            db.query(
-                insertTicketQuery,
-                [user_id, category_id, computer_id, title, roomNumber, description, ticketStatus, created_at, assigned_to, created_at],
-                (err, result) => {
-                    if (err) {
-                        console.error('Error inserting ticket:', err);
-                        return res.status(500).json({ error: 'Database error while creating ticket.' });
-                    }
+            db.query(getUserEmailQuery, [user_id], (err, userResults) => {
+                if (err) {
+                    console.error('Error fetching user email:', err);
+                    return res.status(500).json({ error: 'Database error while getting user email.' });
+                }
+                
+                const userEmail = userResults.length > 0 ? userResults[0].email : null;
 
-                    // Only update last_assigned_at if a technician was assigned
-                    if (assigned_to) {
-                        const updateLastAssignedQuery = `
-                            INSERT INTO user_details (user_id, details_key, details_value)
-                            VALUES (?, 'last_assigned_at', NOW())
-                            ON DUPLICATE KEY UPDATE details_value = NOW();
-                        `;
+                // Create the ticket with appropriate status and assignment
+                const insertTicketQuery = `
+                    INSERT INTO ticket (user_id, category_id, computer_id, title, roomNumber, description, ticket_status, created_at, assigned_to, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `;
+                
+                db.query(
+                    insertTicketQuery,
+                    [user_id, category_id, computer_id, title, roomNumber, description, ticketStatus, created_at, assigned_to, created_at],
+                    (err, result) => {
+                        if (err) {
+                            console.error('Error inserting ticket:', err);
+                            return res.status(500).json({ error: 'Database error while creating ticket.' });
+                        }
 
-                        db.query(updateLastAssignedQuery, [assigned_to], (err) => {
-                            if (err) {
-                                console.error('Error updating last_assigned_at:', err);
-                                // Continue despite error as the ticket is already created
+                        const ticketId = result.insertId;
+
+                        // Only update last_assigned_at if a technician was assigned
+                        if (assigned_to) {
+                            const updateLastAssignedQuery = `
+                                INSERT INTO user_details (user_id, details_key, details_value)
+                                VALUES (?, 'last_assigned_at', NOW())
+                                ON DUPLICATE KEY UPDATE details_value = NOW();
+                            `;
+
+                            db.query(updateLastAssignedQuery, [assigned_to], (err) => {
+                                if (err) {
+                                    console.error('Error updating last_assigned_at:', err);
+                                    // Continue despite error as the ticket is already created
+                                }
+                            });
+                            
+                            // Send notification to the technician
+                            if (technicianEmail) {
+                                const technicianMailSubject = 'New Ticket Assigned';
+                                const technicianMailContent = `
+                                    <h2>New Ticket Assigned</h2>
+                                    <p>A new ticket has been assigned to you:</p>
+                                    <ul>
+                                        <li><strong>Ticket ID:</strong> ${ticketId}</li>
+                                        <li><strong>Title:</strong> ${title}</li>
+                                        <li><strong>Category:</strong> ${categoryName}</li>
+                                        <li><strong>Room Number:</strong> ${roomNumber}</li>
+                                        <li><strong>Description:</strong> ${description}</li>
+                                    </ul>
+                                    <p>Please login to the system to view more details and take action.</p>
+                                `;
+                                
+                                sendMail(technicianEmail, technicianMailSubject, technicianMailContent);
                             }
+                        }
+                        
+                        // Send notification to the student
+                        if (userEmail) {
+                            const userMailSubject = 'Ticket Status Update';
+                            const userMailContent = assigned_to ? 
+                                `
+                                <h2>Your Ticket Has Been Assigned</h2>
+                                <p>Your ticket has been assigned to a technician and is now in progress:</p>
+                                <ul>
+                                    <li><strong>Ticket ID:</strong> ${ticketId}</li>
+                                    <li><strong>Title:</strong> ${title}</li>
+                                    <li><strong>Status:</strong> In-Progress</li>
+                                </ul>
+                                <p>A technician will look into your issue soon.</p>
+                                ` : 
+                                `
+                                <h2>Your Ticket Has Been Created</h2>
+                                <p>Your ticket has been created and is awaiting assignment to a technician:</p>
+                                <ul>
+                                    <li><strong>Ticket ID:</strong> ${ticketId}</li>
+                                    <li><strong>Title:</strong> ${title}</li>
+                                    <li><strong>Status:</strong> Open</li>
+                                </ul>
+                                <p>You will receive another notification when a technician is assigned.</p>
+                                `;
+                            
+                            sendMail(userEmail, userMailSubject, userMailContent);
+                        }
+
+                        // Respond with appropriate message based on assignment status
+                        const responseMessage = assigned_to 
+                            ? 'Ticket created and assigned to technician successfully' 
+                            : 'Ticket created successfully and waiting for available technician';
+
+                        return res.status(201).json({
+                            message: responseMessage,
+                            ticket_id: ticketId,
+                            ticket_status: ticketStatus,
+                            assigned_to: assigned_to,
                         });
                     }
-
-                    // Respond with appropriate message based on assignment status
-                    const responseMessage = assigned_to 
-                        ? 'Ticket created and assigned to technician successfully' 
-                        : 'Ticket created successfully and waiting for available technician';
-
-                    return res.status(201).json({
-                        message: responseMessage,
-                        ticket_id: result.insertId,
-                        ticket_status: ticketStatus,
-                        assigned_to: assigned_to,
-                    });
-                }
-            );
+                );
+            });
         });
     });
 };
 
-// Implement a function to process the queue of unassigned tickets
+
 const processTicketQueue = () => {
-    // Get all unassigned tickets (status = 'Open' and assigned_to is NULL)
+    
     const getUnassignedTicketsQuery = `
-        SELECT t.id, t.category_id, c.name as category_name
+        SELECT t.id, t.category_id, c.name as category_name, t.user_id, t.title, t.roomNumber, t.description
         FROM ticket t
         JOIN category c ON t.category_id = c.id
         WHERE t.ticket_status = 'Open' AND (t.assigned_to IS NULL OR t.assigned_to = 0)
@@ -150,11 +214,10 @@ const processTicketQueue = () => {
             return;
         }
 
-        // Process each unassigned ticket
         tickets.forEach(ticket => {
-            // Find available technician for this ticket's category
+            
             const findTechnicianQuery = `SELECT 
-                u.id
+                u.id, u.email
                 FROM 
                     users u
                 JOIN 
@@ -193,13 +256,12 @@ const processTicketQueue = () => {
 
             db.query(findTechnicianQuery, [ticket.category_name], (err, technicians) => {
                 if (err || technicians.length === 0) {
-                    // No technician available yet, leave in queue
                     return;
                 }
 
                 const technician_id = technicians[0].id;
+                const technicianEmail = technicians[0].email;
 
-                // Assign the ticket to the technician
                 const updateTicketQuery = `
                     UPDATE ticket 
                     SET assigned_to = ?, ticket_status = 'In-Progress', updated_at = NOW() 
@@ -212,7 +274,6 @@ const processTicketQueue = () => {
                         return;
                     }
 
-                    // Update technician's last_assigned_at
                     const updateLastAssignedQuery = `
                         INSERT INTO user_details (user_id, details_key, details_value)
                         VALUES (?, 'last_assigned_at', NOW())
@@ -226,9 +287,53 @@ const processTicketQueue = () => {
                         
                         console.log(`Ticket ${ticket.id} assigned to technician ${technician_id}`);
                         
-                        // You can implement notification logic here if needed
-                        // notifyTechnician(technician_id, ticket.id);
-                        // notifyUser(ticket.user_id, 'Your ticket has been assigned to a technician');
+                        // Get the user's email
+                        const getUserEmailQuery = `SELECT email FROM users WHERE id = ?`;
+                        
+                        db.query(getUserEmailQuery, [ticket.user_id], (err, userResults) => {
+                            if (err) {
+                                console.error('Error fetching user email:', err);
+                                return;
+                            }
+                            
+                            const userEmail = userResults.length > 0 ? userResults[0].email : null;
+                            
+                            // Send notification to the technician
+                            if (technicianEmail) {
+                                const technicianMailSubject = 'New Ticket Assigned';
+                                const technicianMailContent = `
+                                    <h2>New Ticket Assigned</h2>
+                                    <p>A new ticket has been assigned to you:</p>
+                                    <ul>
+                                        <li><strong>Ticket ID:</strong> ${ticket.id}</li>
+                                        <li><strong>Title:</strong> ${ticket.title}</li>
+                                        <li><strong>Category:</strong> ${ticket.category_name}</li>
+                                        <li><strong>Room Number:</strong> ${ticket.roomNumber}</li>
+                                        <li><strong>Description:</strong> ${ticket.description}</li>
+                                    </ul>
+                                    <p>Please login to the system to view more details and take action.</p>
+                                `;
+                                
+                                sendMail(technicianEmail, technicianMailSubject, technicianMailContent);
+                            }
+                            
+                            // Send notification to the student
+                            if (userEmail) {
+                                const userMailSubject = 'Ticket Status Update';
+                                const userMailContent = `
+                                    <h2>Your Ticket Has Been Assigned</h2>
+                                    <p>Your ticket has been assigned to a technician and is now in progress:</p>
+                                    <ul>
+                                        <li><strong>Ticket ID:</strong> ${ticket.id}</li>
+                                        <li><strong>Title:</strong> ${ticket.title}</li>
+                                        <li><strong>Status:</strong> In-Progress</li>
+                                    </ul>
+                                    <p>A technician will look into your issue shortly.</p>
+                                `;
+                                
+                                sendMail(userEmail, userMailSubject, userMailContent);
+                            }
+                        });
                     });
                 });
             });
