@@ -1,115 +1,81 @@
 <template>
   <div class="profile-container">
-    <div class="card shadow">
-      <div class="card-header bg-primary text-white ">
-        <h2 class="mb-0 text-center">User Profile</h2>
-      </div>
-      
-      <div class="card-body">
-        <div v-if="loading" class="text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+    <div class="profile-header">
+      <h2>Profile</h2>
+    </div>
+
+    <div v-if="loading" class="text-center">Loading...</div>
+
+    <div v-else class="profile-content">
+      <div v-if="!editing" class="profile-view">
+        <div class="profile-avatar">
+          <div class="avatar-circle">
+            <i class="fa-solid fa-user avatar-icon"></i>
           </div>
-          <p class="mt-2">Loading your profile...</p>
+          <h3 class="profile-name"><strong>{{ profile.fname }} {{ profile.lname }}</strong></h3>
         </div>
-        
-        <div v-else>
-          <!-- View Mode -->
-          <div v-if="!editing" class="profile-view">
-            <div class="row mb-4">
-              <div class="col-md-3 text-center">
-                <div class="avatar-placeholder bg-light rounded-circle mb-2">
-                  <span>{{ getInitials() }}</span>
-                </div>
-              </div>
-              <div class="col-md-9">
-                <h4 class="mb-3">{{ profile.fname }} {{ profile.lname }}</h4>
-                <div class="profile-info">
-                  <div class="info-item">
-                    <i class="bi bi-telephone"></i>
-                    <span>{{ profile.phn_no }}</span>
-                  </div>
-                  <div class="info-item">
-                    <i class="bi bi-envelope"></i>
-                    <span>{{ profile.email }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <hr>
-            
-            <div class="additional-info">
-              <h5 class="mb-3">Additional Information</h5>
-              <div class="row" v-if="Object.keys(profile.roleData).length > 0">
-                <div v-for="(value, key) in profile.roleData" :key="key" class="col-md-6 mb-2">
-                  <div class="info-card">
-                    <div class="info-label">{{ formatLabel(key) }}</div>
-                    <div class="info-value">{{ value }}</div>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="text-muted">No additional information available</div>
-            </div>
-            
-            <div class="text-center mt-4">
-              <button @click="editing = true" class="btn btn-primary px-4">
-                <i class="bi bi-pencil me-2"></i>Edit Profile
-              </button>
-            </div>
+
+        <div class="profile-info">
+          <div class="info-item">
+            <label><strong>Email:</strong></label>
+            <p>{{ profile.email }}</p>
           </div>
           
-          <!-- Edit Mode -->
-          <form v-else @submit.prevent="updateProfile" class="profile-form">
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label">First Name</label>
-                <input type="text" v-model="profile.fname" class="form-control" required />
-              </div>
-              
-              <div class="col-md-6">
-                <label class="form-label">Last Name</label>
-                <input type="text" v-model="profile.lname" class="form-control" required />
-              </div>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Phone Number</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                <input type="text" v-model="profile.phn_no" class="form-control" required />
-              </div>
-            </div>
-            
-            <div class="mb-3">
-              <label class="form-label">Email</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                <input type="email" v-model="profile.email" class="form-control" disabled />
-              </div>
-              <small class="text-muted">Email cannot be changed</small>
-            </div>
-            
-            <h5 class="mb-3 mt-4">Additional Information</h5>
-            <div v-for="(value, key) in profile.roleData" :key="key" class="mb-3">
-              <label class="form-label">{{ formatLabel(key) }}</label>
-              <input type="text" v-model="profile.roleData[key]" class="form-control" />
-            </div>
-            
-            <div class="d-flex justify-content-center gap-3 mt-4">
-              <button type="submit" class="btn btn-primary px-4">
-                <i class="bi bi-check2 me-1"></i> Save Changes
-              </button>
-              <button type="button" @click="editing = false" class="btn btn-outline-secondary px-4">
-                Cancel
-              </button>
-            </div>
-          </form>
+          <div class="info-item">
+            <label><strong>Phone Number:</strong></label>
+            <p>{{ profile.phn_no }}</p>
+          </div>
+          
+          <div 
+            v-for="(value, key) in profile.roleData" 
+            :key="key" 
+            class="info-item">
+            <label><strong>{{ key }}:</strong></label>
+            <p>{{ value }}</p>
+          </div>
         </div>
+
+        <button @click="editing = true" class="edit-btn">Edit Profile</button>
       </div>
+
+      <form v-else @submit.prevent="updateProfile" class="profile-form">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" v-model="profile.fname" required />
+        </div>
+        
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" v-model="profile.lname" required />
+        </div>
+        
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" v-model="profile.email" disabled />
+        </div>
+        
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="text" v-model="profile.phn_no" required />
+        </div>
+        
+        <div 
+          v-for="(value, key) in profile.roleData" 
+          :key="key" 
+          class="form-group">
+          <label>{{ key }}</label>
+          <input type="text" v-model="profile.roleData[key]" />
+        </div>
+        
+        <div class="button-group">
+          <button type="submit" class="update-btn">Update Profile</button>
+          <button type="button" @click="editing = false" class="cancel-btn">Cancel</button>
+        </div>
+      </form>
     </div>
   </div>
 </template>
+
 
 <script>
 import axios from "axios";
@@ -162,19 +128,6 @@ export default {
         alert("Failed to update profile");
       }
     },
-    getInitials() {
-      if (this.profile.fname && this.profile.lname) {
-        return (this.profile.fname[0] + this.profile.lname[0]).toUpperCase();
-      }
-      return "U";
-    },
-    formatLabel(key) {
-      return key
-        .replace(/_/g, ' ')
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, str => str.toUpperCase())
-        .trim();
-    }
   },
   mounted() {
     this.fetchProfile();
@@ -184,99 +137,177 @@ export default {
 
 <style scoped>
 .profile-container {
-  max-width: 600px;
-  margin: 30px auto;
-  padding: 0 15px;
-}
-.bg-primary {
-    background-color: rgb(76 80 86) !important;
-}
-.btn-primary {
-    --bs-btn-color: #fff;
-    --bs-btn-bg: #545960;
-    --bs-btn-border-color: #131414;
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: #8a8e93;
-    --bs-btn-hover-border-color: #080909;
-    --bs-btn-focus-shadow-rgb: 49,132,253;
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: #7a8fae;
-    --bs-btn-active-border-color: #1d1d1e;
-    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-    --bs-btn-disabled-color: #fff;
-    --bs-btn-disabled-bg: #899bb6;
-    --bs-btn-disabled-border-color: #0b0b0b;
-}
-.card {
-  border: none;
-  border-radius: 12px;
-  overflow: hidden;
+width: 100%;
+max-width: 500px;
+margin: 0 auto;
+border-radius: 8px;
+background-color: #fff;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+overflow: hidden;
 }
 
-.card-header {
-  padding: 15px;
+.profile-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 20px 20px;
+background-color: #435b74;
+color: white;
 }
 
-.avatar-placeholder {
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  font-size: 24px;
-  font-weight: bold;
-  color: #6c757d;
+.profile-header h2 {
+margin: 0;
+font-size: 1.5rem;
 }
 
-.profile-info {
-  margin-top: 10px;
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.info-item i {
-  width: 25px;
-  color: #6c757d;
-}
-
-.info-card {
-  background-color: #f8f9fa;
-  padding: 10px 15px;
-  border-radius: 8px;
-  height: 100%;
-}
-
-.info-label {
-  font-size: 14px;
-  color: #6c757d;
-  margin-bottom: 5px;
-}
-
-.info-value {
-  font-weight: 500;
-}
-
-.profile-form label {
-  font-weight: 500;
+.profile-content {
+padding: 0;
 }
 
 .profile-view {
-  padding: 10px;
+display: flex;
+flex-direction: column;
 }
 
-@media (max-width: 767px) {
-  .avatar-placeholder {
-    margin-bottom: 20px;
-  }
-  
-  .profile-info {
-    text-align: center;
-  }
-  
+.profile-avatar {
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 20px 0;
+background-color: #f8f9fa;
+}
+
+.avatar-circle {
+width: 75px;
+height: 75px;
+border-radius: 50%;
+background-color: #dee2e6;
+display: flex;
+align-items: center;
+justify-content: center;
+margin-bottom: 10px;
+}
+
+.avatar-icon {
+font-size: 30px;
+font-style: normal;
+}
+
+.profile-name {
+margin: 0;
+font-size: 1.2rem;
+text-align: center;
+}
+
+.profile-info {
+padding: 15px;
+background-color: #f8f9fa;
+}
+
+.info-item {
+margin-bottom: 15px;
+padding-bottom: 10px;
+border-bottom: 1px solid #e9ecef;
+}
+
+.info-item:last-child {
+margin-bottom: 0;
+padding-bottom: 0;
+border-bottom: none;
+}
+
+.info-item label {
+font-weight: bold;
+color: #495057;
+display: block;
+margin-bottom: 5px;
+font-size: 1 rem;
+}
+
+.info-item p {
+margin: 0;
+color: #212529;
+font-size: 1rem;
+}
+
+.edit-btn {
+margin: 15px;
+padding: 8px 20px;
+background-color: #0d6efd;
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+font-weight: bold;
+align-self: center;
+}
+
+.edit-btn:hover {
+background-color: #0b5ed7;
+}
+
+/* Edit Form Styles */
+.profile-form {
+padding: 15px;
+}
+
+.form-group {
+margin-bottom: 15px;
+}
+
+.form-group label {
+display: block;
+margin-bottom: 5px;
+font-weight: bold;
+color: #495057;
+}
+
+.form-group input {
+width: 100%;
+padding: 8px 10px;
+border: 1px solid #ced4da;
+border-radius: 4px;
+font-size: 1rem;
+}
+
+.form-group input:disabled {
+background-color: #e9ecef;
+cursor: not-allowed;
+}
+
+.button-group {
+display: flex;
+gap: 10px;
+margin-top: 15px;
+}
+
+.update-btn {
+padding: 8px 20px;
+background-color: #0d6efd;
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+font-weight: bold;
+flex: 1;
+}
+
+.cancel-btn {
+padding: 8px 20px;
+background-color: #6c757d;
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+font-weight: bold;
+flex: 1;
+}
+
+.update-btn:hover {
+background-color: #0b5ed7;
+}
+
+.cancel-btn:hover {
+background-color: #5a6268;
 }
 </style>
