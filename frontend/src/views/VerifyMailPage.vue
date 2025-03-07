@@ -29,40 +29,40 @@
         </div>
       </div>
     </div>
-  </div>
-</template>
+  </template>
+  
+  <script>
+  import axios from "axios";
+  
+  export default {
+    data() {
+      return {
+        otp: "",
+        email: this.$route.query.email || "", 
+      };
+    },
+    methods: {
+      async handleVerification() {
+        try {
+          const res = await axios.post("/api/user/register/verify", {
+            email: this.email,
+            otp: this.otp
+          });
+  
+          if (res.data.status === "success") {
+            localStorage.setItem("isVerified", "true");
+            localStorage.setItem("accessToken", res.data.token);
+            localStorage.setItem("userRole", res.data.role);
+            localStorage.setItem("userId", res.data.id);
+            localStorage.setItem("is_active", res.data.is_active);
+            this.$emit("verify-success", res.data.role);
+            alert("Email verified successfully!");
+            if (res.data.role === "technician" && res.data.is_active === 0) {
+              this.$router.push("/waiting-approval");
+            } else {
+              this.$router.push("/dashboard");
+            }
 
-<script>
-import axios from "axios";
-
-export default {
-  data() {
-    return {
-      otp: "",
-      email: this.$route.query.email || "", 
-    };
-  },
-  methods: {
-    async handleVerification() {
-      try {
-        const res = await axios.post("/api/user/register/verify", {
-          email: this.email,
-          otp: this.otp
-        });
-
-        if (res.data.status === "success") {
-          localStorage.setItem("isVerified", "true");
-          localStorage.setItem("accessToken", res.data.token);
-          localStorage.setItem("userRole", res.data.role);
-          localStorage.setItem("userId", res.data.id);
-          localStorage.setItem("is_active", res.data.is_active);
-          this.$emit("verify-success", res.data.role);
-          alert("Email verified successfully!");
-          if (res.data.role === "technician" && res.data.is_active === 0) {
-            this.$router.push("/waiting-approval");
-          } else {
-            this.$router.push("/dashboard");
-          }
         } else {
           alert(res.data.error || "Verification failed!");
         }
