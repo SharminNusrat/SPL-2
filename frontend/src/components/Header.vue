@@ -36,6 +36,8 @@ export default {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userRole");
       localStorage.removeItem("userId");
+      localStorage.removeItem("is_active");
+      localStorage.removeItem("isVerified");
       this.isLoggedIn = false;
       this.$router.push("/login");
 

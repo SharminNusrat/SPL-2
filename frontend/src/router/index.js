@@ -19,6 +19,7 @@ import ForgotPassword from '../views/ForgotPassword.vue';
 import HomePage from '../views/HomePage.vue';
 import TechnicianAvailability from '../views/TechnicianAvailability.vue';
 import TechnicianManagement from '../views/TechnicianManagement.vue';
+import WaitingApproval from '../views/WaitingApproval.vue';
 
 const routes = [
   { 
@@ -46,6 +47,12 @@ const routes = [
     path: '/verify', 
     name: 'verify',
     component: VerifyMailPage 
+  },
+
+  {
+    path: '/waiting-approval',
+    name: 'waiting-approval',
+    component: WaitingApproval
   },
   
   {

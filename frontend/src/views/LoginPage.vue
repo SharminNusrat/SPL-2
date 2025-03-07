@@ -70,6 +70,7 @@ export default {
         localStorage.setItem("accessToken", res.data.token);
         localStorage.setItem("userId", res.data.id);
         localStorage.setItem("userRole", res.data.role); 
+        localStorage.setItem("is_active", res.data.is_active);
         this.$emit('login-success', res.data.role);
         alert("Login successful!");
 

@@ -1,13 +1,18 @@
 <template>
   <div class="report-container">
-    <h2>Technician Performance Report</h2>
+    <div class="header-container">
+      <h2>Technician Performance Report</h2>
+      <button @click="downloadPDF" class="download-btn" v-if="!loading && !error">
+        <span class="download-icon">↓</span> Download PDF
+      </button>
+    </div>
     <div v-if="loading" class="loading">Loading data...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else>
-      <div class="chart-container">
-        <Chart type="bar" :data="chartData" :options="chartOptions" />
+      <div class="chart-container" ref="chartContainer">
+        <Chart type="bar" :data="chartData" :options="chartOptions" ref="performanceChart" />
       </div>
-      <div class="table-container mt-4">
+      <div class="table-container mt-4" ref="tableContainer">
         <table class="performance-table">
           <thead>
             <tr>
@@ -34,6 +39,8 @@
 <script>
 import { Chart } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
@@ -82,7 +89,40 @@ export default {
     calculateResolutionRate(tech) {
       if (tech.total_assigned === 0) return '0.00';
       return ((tech.total_resolved / tech.total_assigned) * 100).toFixed(2);
-    }
+    },
+    downloadPDF() {
+      try {
+        const doc = new jsPDF();
+        
+        doc.setFontSize(18);
+        doc.text('Technician Performance Report', 14, 20);
+        
+        doc.setFontSize(12);
+        const currentDate = new Date().toLocaleDateString();
+        doc.text(`Generated on: ${currentDate}`, 14, 30);
+        
+        doc.setFontSize(10);
+        doc.text('Technician Name', 14, 50);
+        doc.text('Total Assigned', 70, 50);
+        doc.text('Total Resolved', 120, 50);
+        doc.text('Resolution Rate', 170, 50);
+        
+        let y = 60;
+        this.technicianData.forEach(tech => {
+          doc.text(tech.technician_name, 14, y);
+          doc.text(tech.total_assigned.toString(), 70, y);
+          doc.text(tech.total_resolved.toString(), 120, y);
+          doc.text(this.calculateResolutionRate(tech) + '%', 170, y);
+          y += 10;
+        });
+        
+        doc.save('technician_performance_report.pdf');
+        
+      } catch (err) {
+        console.error('Error generating PDF:', err);
+        alert('Error generating PDF: ' + err.message);
+      }
+}
   },
   computed: {
     chartData() {
@@ -120,13 +160,40 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .report-container {
   padding: 20px;
   background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.download-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.download-btn:hover {
+  background-color: #388E3C;
+}
+
+.download-icon {
+  font-size: 16px;
 }
 
 .chart-container {

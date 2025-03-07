@@ -53,10 +53,16 @@
           if (res.data.status === "success") {
             localStorage.setItem("isVerified", "true");
             localStorage.setItem("accessToken", res.data.token);
-            localStorage.setItem("userRole", res.data.role); // Store role
+            localStorage.setItem("userRole", res.data.role);
+            localStorage.setItem("userId", res.data.id);
+            localStorage.setItem("is_active", res.data.is_active);
             this.$emit("verify-success", res.data.role);
             alert("Email verified successfully!");
-            this.$router.push("/dashboard");
+            if (res.data.role === "technician" && res.data.is_active === 0) {
+              this.$router.push("/waiting-approval");
+            } else {
+              this.$router.push("/dashboard");
+            }
           } else {
             alert(res.data.error || "Verification failed!");
           }
