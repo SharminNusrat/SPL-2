@@ -32,7 +32,7 @@ const createTicket = (req, res) => {
 
         const categoryName = categoryResults[0].name;
         
-        // Check for available technicians with the required expertise
+        
         const getAvailableTechniciansQuery = `SELECT 
             u.id, u.email
             FROM 
@@ -64,6 +64,7 @@ const createTicket = (req, res) => {
                 AND ud3.details_key = 'availability'
             WHERE 
                 u.role = 'technician'
+                AND u.is_active = 1
                 AND (ud3.details_value = 'available' OR ud3.details_value IS NULL)
             ORDER BY 
                 t.open_tickets ASC,
@@ -79,16 +80,15 @@ const createTicket = (req, res) => {
 
             let assigned_to = null;
             let technicianEmail = null;
-            let ticketStatus = 'Open'; // Default status is Open
-
-            // If an available technician is found, assign the ticket
+            let ticketStatus = 'Open'; 
+           
             if (results.length > 0) {
                 assigned_to = results[0].id;
                 technicianEmail = results[0].email;
                 ticketStatus = 'In-Progress';
             }
 
-            // Get the student's email
+            
             const getUserEmailQuery = `SELECT email FROM users WHERE id = ?`;
             
             db.query(getUserEmailQuery, [user_id], (err, userResults) => {
@@ -99,7 +99,6 @@ const createTicket = (req, res) => {
                 
                 const userEmail = userResults.length > 0 ? userResults[0].email : null;
 
-                // Create the ticket with appropriate status and assignment
                 const insertTicketQuery = `
                     INSERT INTO ticket (user_id, category_id, computer_id, title, roomNumber, description, ticket_status, created_at, assigned_to, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -116,7 +115,6 @@ const createTicket = (req, res) => {
 
                         const ticketId = result.insertId;
 
-                        // Only update last_assigned_at if a technician was assigned
                         if (assigned_to) {
                             const updateLastAssignedQuery = `
                                 INSERT INTO user_details (user_id, details_key, details_value)
@@ -127,11 +125,11 @@ const createTicket = (req, res) => {
                             db.query(updateLastAssignedQuery, [assigned_to], (err) => {
                                 if (err) {
                                     console.error('Error updating last_assigned_at:', err);
-                                    // Continue despite error as the ticket is already created
+                                    
                                 }
                             });
                             
-                            // Send notification to the technician
+                            
                             if (technicianEmail) {
                                 const technicianMailSubject = 'New Ticket Assigned';
                                 const technicianMailContent = `
@@ -151,7 +149,7 @@ const createTicket = (req, res) => {
                             }
                         }
                         
-                        // Send notification to the student
+                        
                         if (userEmail) {
                             const userMailSubject = 'Ticket Status Update';
                             const userMailContent = assigned_to ? 
@@ -179,7 +177,6 @@ const createTicket = (req, res) => {
                             sendMail(userEmail, userMailSubject, userMailContent);
                         }
 
-                        // Respond with appropriate message based on assignment status
                         const responseMessage = assigned_to 
                             ? 'Ticket created and assigned to technician successfully' 
                             : 'Ticket created successfully and waiting for available technician';
@@ -247,6 +244,7 @@ const processTicketQueue = () => {
                     AND ud3.details_key = 'availability'
                 WHERE 
                     u.role = 'technician'
+                    AND u.is_active = 1
                     AND (ud3.details_value = 'available' OR ud3.details_value IS NULL)
                 ORDER BY 
                     t.open_tickets ASC,
@@ -287,7 +285,6 @@ const processTicketQueue = () => {
                         
                         console.log(`Ticket ${ticket.id} assigned to technician ${technician_id}`);
                         
-                        // Get the user's email
                         const getUserEmailQuery = `SELECT email FROM users WHERE id = ?`;
                         
                         db.query(getUserEmailQuery, [ticket.user_id], (err, userResults) => {
@@ -298,7 +295,7 @@ const processTicketQueue = () => {
                             
                             const userEmail = userResults.length > 0 ? userResults[0].email : null;
                             
-                            // Send notification to the technician
+                           
                             if (technicianEmail) {
                                 const technicianMailSubject = 'New Ticket Assigned';
                                 const technicianMailContent = `
@@ -317,7 +314,7 @@ const processTicketQueue = () => {
                                 sendMail(technicianEmail, technicianMailSubject, technicianMailContent);
                             }
                             
-                            // Send notification to the student
+                           
                             if (userEmail) {
                                 const userMailSubject = 'Ticket Status Update';
                                 const userMailContent = `
@@ -345,7 +342,7 @@ const updateTicketStatus = (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const allowedStatuses = ['Resolved', 'Closed']; // Allowed statuses
+    const allowedStatuses = ['Resolved', 'Closed']; 
     if (!allowedStatuses.includes(status)) {
         return res.status(400).json({ error: 'Invalid status' });
     }
@@ -363,12 +360,10 @@ const updateTicketStatus = (req, res) => {
 
         const ticket = results[0];
 
-        // Check if the ticket is already closed
         if (ticket.ticket_status === 'Closed') {
             return res.status(400).json({ error: 'Ticket is already closed and cannot be modified.' });
         }
 
-        // Proceed with updating the status to Resolved
         if (status === 'Resolved') {
             const generateRandomCode = () => Math.floor(100000 + Math.random() * 900000).toString();
             const verificationCode = generateRandomCode();
@@ -394,7 +389,7 @@ const updateTicketStatus = (req, res) => {
 
                         return res.status(200).json({
                             message: 'Ticket status updated to Resolved. Verification code sent.',
-                            verification_code: verificationCode // For testing purposes
+                            verification_code: verificationCode 
                         });
                     });
            });

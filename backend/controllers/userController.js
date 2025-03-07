@@ -178,9 +178,9 @@ const verifyMail = (req, res) => {
 
         const user = data[0];
 
-        if (user.is_active === 0) {
-            return res.status(403).json({ status: 'error', error: 'Your account has been deactivated!' });
-        }
+        // if (user.is_active === 0) {
+        //     return res.status(403).json({ status: 'error', error: 'Your account has been deactivated!' });
+        // }
         if (user.verification_token === otp) {
             const q = 'UPDATE users SET is_verified = 1, verification_token = NULL WHERE email = ?';
             db.query(q, [email], (err, updatedData) => {
@@ -219,7 +219,9 @@ const verifyMail = (req, res) => {
                     status: 'success',
                     success: 'Email verified successfully!',
                     role: user.role,  
-                    token           
+                    is_active: user.is_active,
+                    token   
+        
                 });
             });
         } else {
@@ -397,7 +399,8 @@ const register = async (req, res) => {
         const hashedPassword = bcrypt.hashSync(password, salt);
 
         const qInsertUser = 'INSERT INTO users (`fname`, `lname`, `phn_no`, `email`, `password`, `role`, `is_active`) VALUE (?)';
-        const userValues = [fname, lname, phn_no, email, hashedPassword, role, 1];
+        const isActive = role === 'technician' ? 0 : 1;
+        const userValues = [fname, lname, phn_no, email, hashedPassword, role, isActive];
 
         db.query(qInsertUser, [userValues], (err, result) => {
             if (err) {
@@ -529,11 +532,11 @@ const login = (req, res) => {
             ),
             httpOnly: true, 
         };
-
-       
+        
         res.cookie('accessToken', token, cookieOptions).status(200).json({
             id: user.id,
             role: user.role,
+            is_active: user.is_active,
             token,
         });
     });

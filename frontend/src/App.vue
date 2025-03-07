@@ -2,8 +2,8 @@
   <div id="app">
     <Header />
     <div class="app-container">
-      <Sidebar v-if="showSidebar" />
-      <main :class="{ 'content-with-sidebar': showSidebar, 'full-content': !showSidebar }">
+      <Sidebar v-if="showSidebar && isActive" />
+      <main :class="{ 'content-with-sidebar': showSidebar && isActive, 'full-content': !showSidebar || !isActive }">
         <router-view 
         @login-success="updateUserRole"
         @verify-success="updateUserRole" 
@@ -32,10 +32,18 @@ export default {
     const route = useRoute();
     const userRole = ref(null);
     const showSidebar = ref(false);
+    const isActive = ref(false);
     
-    const hideSidebarRoutes = ["/", "/login", "/register", "/verify", "/forgot-password"];
+    const hideSidebarRoutes = ["/", "/login", "/register", "/verify", "/forgot-password","/waiting-approval" ];
 
     userRole.value = localStorage.getItem("userRole");
+    
+    const checkUserActive = () => {
+      const userActiveStatus = localStorage.getItem("is_active");
+      isActive.value = userActiveStatus !== null && userActiveStatus !== "0";
+    };
+    
+    checkUserActive();
 
     watchEffect(() => {
       showSidebar.value = !hideSidebarRoutes.includes(route.path) && userRole.value !== null && userRole.value !== undefined;
@@ -43,13 +51,17 @@ export default {
     
     watch(userRole, () => {
       showSidebar.value = !hideSidebarRoutes.includes(route.path) && userRole.value;
+      checkUserActive(); 
     });
+    
     const updateUserRole = (role) => {
       userRole.value = role;
+      checkUserActive(); 
     };
 
     return {
       showSidebar,
+      isActive,
       updateUserRole
     };
       
@@ -58,7 +70,6 @@ export default {
 </script>
 
 <style>
-
 html, body, #app {
   height: 100%;
   margin: 0;
@@ -66,7 +77,6 @@ html, body, #app {
   display: flex;
   flex-direction: column;
 }
-
 
 .app-container {
   display: flex;
@@ -81,7 +91,6 @@ html, body, #app {
   overflow-y: auto;  
   height: calc(100vh - 120px); 
 }
-
 
 .full-content {
   width: 100%;
