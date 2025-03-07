@@ -18,6 +18,7 @@ import TechnicianSelfReport from '../views/TechnicianSelfReport.vue';
 import ForgotPassword from '../views/ForgotPassword.vue';
 import HomePage from '../views/HomePage.vue';
 import TechnicianAvailability from '../views/TechnicianAvailability.vue';
+import TechnicianManagement from '../views/TechnicianManagement.vue';
 
 const routes = [
   { 
@@ -102,7 +103,14 @@ const routes = [
     component: TechnicianAvailability,
     meta: { requiresAuth: true }
   },
-  
+  {
+    path: '/technicians',
+    name: 'technicianManagement', 
+    component: TechnicianManagement,
+    meta: {
+      requiresAuth: true
+    }
+  },
   { path: '/dashboard',
     name: 'dashboard', 
     component: Dashboard, 

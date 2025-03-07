@@ -3,7 +3,7 @@
     <div class="row w-100">
       <div class="col-md-6 offset-md-3">
         <div class="card-wrapper">
-          <div class="card-shadow"></div> <!-- Shadow Div -->
+          <div class="card-shadow"></div> 
           <div class="card">
             <div class="card-body">
               <h3 class="text-center mb-4">Login</h3>
@@ -67,27 +67,29 @@ export default {
           withCredentials: true,
         });
 
-        // Store token and redirect user
         localStorage.setItem("accessToken", res.data.token);
         localStorage.setItem("userId", res.data.id);
-        localStorage.setItem("userRole", res.data.role); // Save role
+        localStorage.setItem("userRole", res.data.role); 
         this.$emit('login-success', res.data.role);
         alert("Login successful!");
 
         this.$router.replace("/dashboard");
 
       } catch (error) {
-        console.error(error.response?.data || "Login failed");
+            console.error(error.response?.data || "Login failed");
 
-        const errorMessage = error.response?.data || "Invalid email or password!";
+            const errorMessage = error.response?.data?.error || "Invalid email or password!";
 
-        if (errorMessage.includes("Your account is not verified")) {
-          alert("Redirecting to verification page...");
-          this.$router.push({ path: "/verify", query: { email: this.email } });
-        } else {
-          alert(errorMessage);
+            if (error.response && error.response.status === 403) {
+                alert(error.response.data.message || "Your account has been deactivated!");
+            } else if (errorMessage.includes("not verified")) {
+                alert("Redirecting to verification page...");
+                this.$router.push({ path: "/verify", query: { email: this.email } });
+            } else {
+                alert(errorMessage);
+            }
         }
-      }
+
     }
   },
 };

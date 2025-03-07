@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const userRoutes = require('./routes/userRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
+const technicianManageRoutes = require('./routes/technicianManageRoutes');
 const { processTicketQueue } = require('./controllers/ticketController'); 
 
 const db = require('./db-config');
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 app.use('/api/user', userRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api/technicians', technicianManageRoutes);
 app.get('/', (req, res) => {
     res.send('Hiii!');
 })
