@@ -595,4 +595,6 @@ const updateAvailability = (req, res) => {
     });
 };
 
-module.exports = { register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP,getAvailability,updateAvailability };
+
+
+module.exports = { register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP,getAvailability,updateAvailability};

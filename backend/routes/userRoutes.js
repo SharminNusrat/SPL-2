@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const {register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP,getAvailability,updateAvailability} = require('../controllers/userController.js');
+const {register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP,
+    getAvailability,updateAvailability,getAllTechnicians,getTechnicianById,deactivateTechnician,activateTechnician} = require('../controllers/userController.js');
 //const authenticateToken = require('../middleware/authMiddleware');
 const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 
@@ -19,8 +20,6 @@ router.put('/profile/update', authenticateToken, updateProfile);
 
 router.get('/availability', authenticateToken, getAvailability);
 router.post('/availability', authenticateToken, updateAvailability);
-
-
 
 
 module.exports = router;
