@@ -61,9 +61,15 @@
             alert(res.data.error || "Verification failed!");
           }
         } catch (error) {
-          console.error(error.response?.data || "Verification failed");
-          alert(error.response?.data?.error || "Invalid verification code!");
-        }
+            console.error(error.response?.data || "Verification failed");
+            const errorMessage = error.response?.data?.error || "Invalid verification code!";
+
+            if (error.response && error.response.status === 403) {
+              alert(errorMessage);
+              return;
+            }
+            alert(errorMessage);
+          }
       },
   
       async resendCode() {
@@ -84,9 +90,7 @@
   </script>
   
   <style>
-  .verify {
-    background-color: #f8f9fa;
-  }
+  
   .card {
     border-radius: 10px;
   }

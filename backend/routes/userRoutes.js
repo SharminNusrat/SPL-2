@@ -21,4 +21,6 @@ router.get('/availability', authenticateToken, getAvailability);
 router.post('/availability', authenticateToken, updateAvailability);
 
 
+
+
 module.exports = router;

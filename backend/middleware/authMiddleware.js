@@ -2,10 +2,10 @@ const jwt = require('jsonwebtoken');
 const db = require('../db-config');
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    console.log('Authorization Header:', authHeader); // Debugging
+    console.log('Authorization Header:', authHeader); 
 
     const token = authHeader && authHeader.split(' ')[1];
-    console.log('Extracted Token:', token); // Debugging
+    console.log('Extracted Token:', token); 
 
     if (!token) {
         return res.status(401).json({ error: 'Access token is missing' });
@@ -13,26 +13,28 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
-            console.error('Token verification error:', err); // Debugging
+            console.error('Token verification error:', err);
             return res.status(403).json({ error: 'Invalid or expired token' });
         }
 
-        console.log('Token Verified Successfully:', user); // Debugging
-        req.user = user;
-        next();
+        console.log('Token Verified Successfully:', user); 
+        const q = 'SELECT is_active FROM users WHERE id = ?';
+        db.query(q, [user.id], (err, result) => {
+            if (err || result.length === 0) {
+                return res.status(500).json({ error: 'Database error' });
+            }
+
+            if (result[0].is_active === 0) {
+                return res.status(403).json({ error: 'Your account has been deactivated!' });
+            }
+            req.user = user;
+            next();
+       });
     });
 };
-// const isAdmin = (req, res, next) => {
-//     console.log("User in request:", req.user);
-//     console.log("User role:", req.user?.role);
-//     console.log("Is admin check:", req.user?.role === "admin");
-//     if (!req.user || req.user.role !== "admin") {
-//         return res.status(403).json({ error: "Access denied. Admins only." });
-//     }
-//     next();
-// };
+
 const isAdmin = (req, res, next) => {
-    // First make sure we have a user ID from the token
+    
     if (!req.user || !req.user.id) {
         console.error("No user ID in request", req.user);
         return res.status(403).json({ error: "Authentication error: User ID missing" });
@@ -41,7 +43,7 @@ const isAdmin = (req, res, next) => {
     const userId = req.user.id;
     console.log("Checking admin status for user ID:", userId);
     
-    // Query the database to get current role
+    
     const q = 'SELECT role FROM users WHERE id = ?';
     db.query(q, [userId], (err, result) => {
         if (err) {
@@ -56,12 +58,12 @@ const isAdmin = (req, res, next) => {
         
         console.log("User role from database:", result[0].role);
         
-        // Check if admin
+        
         if (result[0].role !== "admin") {
             return res.status(403).json({ error: "Access denied. Admins only." });
         }
         
-        // User is admin, proceed
+        
         next();
     });
 };
