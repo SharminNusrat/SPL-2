@@ -219,6 +219,7 @@ const verifyMail = (req, res) => {
                     status: 'success',
                     success: 'Email verified successfully!',
                     role: user.role,  
+                    id: user.id,
                     is_active: user.is_active,
                     token   
         

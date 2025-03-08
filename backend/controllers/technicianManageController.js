@@ -38,15 +38,52 @@ const deactivateTechnician = (req, res) => {
 
 const activateTechnician = (req, res) => {
     const { id } = req.params;
-    const q = 'UPDATE users SET is_active = 1 WHERE id = ? AND role = "technician"';
-    db.query(q, [id], (err, result) => {
-        if (err) {
+    
+    const getUserQuery = 'SELECT email FROM users WHERE id = ? AND role = "technician"';
+    
+    db.query(getUserQuery, [id], (userErr, userResult) => {
+        if (userErr) {
             return res.status(500).json({ status: 'error', error: 'Database error' });
         }
-        if (result.affectedRows === 0) {
+        
+        if (userResult.length === 0) {
             return res.status(404).json({ status: 'error', error: 'Technician not found' });
         }
-        res.json({ status: 'success', message: 'Technician activated successfully' });
+        
+        const userEmail = userResult[0].email;
+        
+        const updateQuery = 'UPDATE users SET is_active = 1 WHERE id = ? AND role = "technician"';
+        
+        db.query(updateQuery, [id], async (updateErr, updateResult) => {
+            if (updateErr) {
+                return res.status(500).json({ status: 'error', error: 'Database error' });
+            }
+            
+            if (updateResult.affectedRows === 0) {
+                return res.status(404).json({ status: 'error', error: 'Technician not found' });
+            }
+            
+            const mailSubject = 'Account Activation';
+            const content = `
+                <h1>Your Account Has Been Activated</h1>
+                <p>Dear Technician,</p>
+                <p>We are pleased to inform you that your technician account has been successfully activated. You can now log in to our system and start using all the features available to technicians.</p>
+                <p>Thank you for joining our team!</p>
+                <p>Best regards,<br>The Admin Team</p>
+            `;
+            
+            try {
+                await sendMail(userEmail, mailSubject, content);
+                res.json({ status: 'success', message: 'Technician activated successfully and notification email sent' });
+            } catch (emailErr) {
+                console.error('Failed to send email notification:', emailErr);
+                res.json({ 
+                    status: 'success', 
+                    message: 'Technician activated successfully, but email notification failed',
+                    emailError: emailErr.message
+                });
+            }
+        });
     });
 };
 
