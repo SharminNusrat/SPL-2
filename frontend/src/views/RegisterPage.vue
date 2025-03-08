@@ -27,7 +27,6 @@
       <div class="form-group">
         <label for="role">Role</label>
         <select id="role" v-model="formData.role" @change="handleRoleChange" required>
-          <option value="">Select your role</option>
           <option value="student">Student</option>
           <option value="teacher">Teacher</option>
           <option value="technician">Technician</option>
@@ -62,7 +61,6 @@
         <div class="form-group">
           <label for="expertise">Expertise</label>
           <select id="expertise" v-model="formData.roleData.expertise" required>
-            <option value="">Select your expertise</option>
             <option value="hardware">Hardware</option>
             <option value="software">Software</option>
             <option value="networking">Networking</option>
