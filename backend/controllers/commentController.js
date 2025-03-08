@@ -24,7 +24,6 @@ const addComment = (req, res) => {
 
         const commentId = result.insertId;
 
-        // Fetch Ticket Creator and Assigned Technician
         const ticketQuery = `SELECT user_id, assigned_to FROM ticket WHERE id = ?`;
         db.query(ticketQuery, [ticket_id], (ticketErr, ticketResult) => {
             if (ticketErr || ticketResult.length === 0) {
@@ -42,7 +41,6 @@ const addComment = (req, res) => {
                 });
             }
 
-            // Fetch recipient email
             const emailQuery = `SELECT email FROM users WHERE id = ?`;
             db.query(emailQuery, [recipient_id], (emailErr, emailResult) => {
                 if (emailErr || emailResult.length === 0) {
@@ -100,7 +98,6 @@ const editComment = (req, res) => {
             return res.status(403).json({ error: 'You can only edit your own comments or comment not found.' });
         }
 
-        // Fetch ticket_id from comment
         const commentQuery = `SELECT ticket_id FROM comment WHERE id = ?`;
         db.query(commentQuery, [id], (commentErr, commentResult) => {
             if (commentErr || commentResult.length === 0) {
@@ -110,7 +107,6 @@ const editComment = (req, res) => {
 
             const ticket_id = commentResult[0].ticket_id;
 
-            // Fetch Ticket Creator and Assigned Technician
             const ticketQuery = `SELECT user_id, assigned_to FROM ticket WHERE id = ?`;
             db.query(ticketQuery, [ticket_id], (ticketErr, ticketResult) => {
                 if (ticketErr || ticketResult.length === 0) {
@@ -127,7 +123,6 @@ const editComment = (req, res) => {
                     });
                 }
 
-                // Fetch recipient email
                 const emailQuery = `SELECT email FROM users WHERE id = ?`;
                 db.query(emailQuery, [recipient_id], (emailErr, emailResult) => {
                     if (emailErr || emailResult.length === 0) {
