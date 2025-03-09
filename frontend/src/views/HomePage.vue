@@ -40,16 +40,6 @@
         </div>
       </div>
     </section>
-
-    <!-- Footer Section -->
-    <!-- <footer class="footer">
-      <p>Empowering IIT labs with an efficient issue management system.</p>
-      <div class="social-links">
-        <a href="#"><i class="fab fa-facebook"></i></a>
-        <a href="#"><i class="fab fa-twitter"></i></a>
-        <a href="#"><i class="fas fa-envelope"></i></a>
-      </div>
-    </footer> -->
   </div>
 </template>
 
@@ -60,13 +50,11 @@ export default {
 </script>
 
 <style scoped>
-/* Global Styles */
 .home-container {
   text-align: center;
   font-family: 'Poppins', sans-serif;
 }
 
-/* Header Styles */
 .header {
   background: linear-gradient(135deg, #4a90e2, #6a11cb);
   color: white;
@@ -83,22 +71,6 @@ export default {
   margin-bottom: 20px;
 }
 
-/* .cta-button {
-  padding: 12px 24px;
-  background: #ff6f61;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.cta-button:hover {
-  background: #e65a50;
-} */
-
-/* Features Section Styles */
 .features {
   margin: 40px 0;
 }
@@ -145,18 +117,6 @@ export default {
   font-size: 1rem;
   color: #555;
 }
-
-/* Footer Styles */
-/* .footer {
-  background: #333;
-  color: white;
-  padding: 20px;
-  margin-top: 40px;
-}
-
-.footer p {
-  margin-bottom: 10px;
-} */
 
 .social-links a {
   color: white;

@@ -81,7 +81,7 @@ export default {
     async resendCode() {
       try {
           const res = await axios.post("/api/user/resendOTP", {
-              email: this.email, // Pass the email
+              email: this.email, 
           });
 
           alert("New verification code has been sent to your email!");

@@ -1,14 +1,13 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import axios from 'axios'; // Import Axios
+import axios from 'axios'; 
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
 const app = createApp(App);
 
-// Axios Interceptor to Auto-Logout on Deactivation
 axios.interceptors.response.use(
     response => response, 
     error => {

@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-// const authenticateToken = require('../middleware/authMiddleware'); // Import the middleware
-// const isAdmin = require('../middleware/authMiddleware'); // Import the middleware
 const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 
 
@@ -42,12 +40,11 @@ const {
     technicianSummary
 } = require('../controllers/reportController.js');
 
-// Protected routes
+
 router.post('/ticket', authenticateToken, createTicket);
 router.get('/tickets', authenticateToken, getAllTickets);
 router.get('/tickets/:id', authenticateToken,getTicketbyId);
 router.put('/:id/status', authenticateToken, updateTicketStatus);
-//router.delete('/:id', authenticateToken, deleteTicket);
 router.post('/:id/verify', authenticateToken, verifyTicket);
 router.get('/userTickets', authenticateToken, getTicketsByUser);
 

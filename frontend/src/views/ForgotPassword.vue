@@ -93,7 +93,7 @@
       };
     },
     created() {
-      // Check URL parameters
+      
       if (this.$route.query.email) {
         this.email = this.$route.query.email;
       }
@@ -101,7 +101,6 @@
         this.step = 2;
       }
       
-      // Check localStorage
       const savedEmail = localStorage.getItem('resetEmail');
       if (savedEmail && !this.email) {
         this.email = savedEmail;
@@ -123,13 +122,8 @@
           });
           
           if (res.data.status === 'success') {
-            // Save email to localStorage
             localStorage.setItem('resetEmail', this.email);
-            
-            // Move to step 2 directly
             this.step = 2;
-            
-            // Update URL to preserve state on refresh
             this.$router.replace({ 
               path: '/forgot-password', 
               query: { email: this.email, step: 2 } 

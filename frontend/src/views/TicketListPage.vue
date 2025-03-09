@@ -104,9 +104,7 @@ export default {
     }
   },
   methods: {
-    // viewTicketDetails(ticketId) {
-    //   this.$router.push(`/ticket/${ticketId}`);
-    // },
+    
     async fetchUserNames() {
       try {
         const userIds = new Set();

@@ -24,7 +24,7 @@ app.use(cors({
     credentials: true,
     optionsSuccessStatus: 200,
 }));
-// app.use(cookieParser);  
+
 app.use(express.urlencoded({ extended: true })); 
 app.use('/uploads', express.static('uploads'));
 app.use('/api/user', userRoutes);

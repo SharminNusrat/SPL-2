@@ -50,7 +50,6 @@
           const userIds = new Set();
           const assignedIds = new Set();
 
-          // Collect all unique user IDs from tickets
           this.tickets.forEach(ticket => {
             if (ticket.user_id) userIds.add(ticket.user_id);
             if (ticket.assigned_to) assignedIds.add(ticket.assigned_to);
@@ -69,7 +68,6 @@
           const userResults = await Promise.all(userPromises);
           const assignedResults = await Promise.all(assignedPromises);
 
-          // Create mapping of user IDs to names
           const userMap = {};
           userResults.forEach(({ id, data }) => {
             userMap[id] = data.fname + " " + data.lname;
@@ -80,7 +78,6 @@
             assignedMap[id] = data.fname + " " + data.lname;
           });
 
-          // Update tickets with names
           this.tickets = this.tickets.map(ticket => ({
             ...ticket,
             created_by_name: userMap[ticket.user_id] || "Unknown",
@@ -124,7 +121,6 @@
           const token = localStorage.getItem("accessToken");
           this.userRole = localStorage.getItem("userRole");
 
-          //Fetch tickets
           const response = await fetch("/api/tickets/userTickets", {
             method: "GET",
             headers: { "Authorization": `Bearer ${token}` }

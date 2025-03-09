@@ -3,11 +3,8 @@
     <h2>Technician Self Report</h2>
     <div v-if="loading">Loading report...</div>
     <div v-if="error" class="error">{{ error }}</div>
-
-    <!-- Line Graph -->
     <canvas ref="reportChart"></canvas>
 
-    <!-- Summary Table -->
     <div v-if="summaryData" class="summary-table">
       <h3>Technician Summary</h3>
       <table>
@@ -58,7 +55,7 @@ export default {
     if (!this.token || this.userRole !== "technician") {
       console.error("Unauthorized access: Only technicians can view this report.");
       alert("You are not authorized to view this page.");
-      this.$router.push("/"); // Redirect to home or another page
+      this.$router.push("/"); 
       return;
     }
     
@@ -123,7 +120,6 @@ export default {
 
       const ctx = this.$refs.reportChart.getContext("2d");
       
-      // Destroy existing chart if it exists
       if (this.chart) {
         this.chart.destroy();
       }

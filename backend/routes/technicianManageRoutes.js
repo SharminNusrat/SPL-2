@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const {getAllTechnicians,getTechnicianById,deactivateTechnician,activateTechnician} = require('../controllers/technicianManageController.js');
-//const authenticateToken = require('../middleware/authMiddleware');
 const { authenticateToken, isAdmin } = require('../middleware/authMiddleware.js');
 
 router.get('/', authenticateToken,isAdmin, getAllTechnicians);
