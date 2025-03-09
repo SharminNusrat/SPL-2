@@ -22,14 +22,6 @@
             
             <div class="feature-card">
               <div class="icon-container">
-                <i class="icon technician-icon"></i>
-              </div>
-              <h3>Technician Management</h3>
-              <p>Enable or Disable a technician's account and view all their details</p>
-            </div>
-            
-            <div class="feature-card">
-              <div class="icon-container">
                 <i class="icon report-icon"></i>
               </div>
               <h3>Comprehensive Reporting</h3>

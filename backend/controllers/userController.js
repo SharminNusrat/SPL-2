@@ -518,18 +518,17 @@ const login = (req, res) => {
         }
         console.log('User Role:', user.role);
 
-        // Generate token
         const id = user.id;
         const token = jwt.sign({ id }, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_EXPIRES_IN || '1h', // Default to 1 hour if not set
+            expiresIn: process.env.JWT_EXPIRES_IN || '1h', 
         });
 
-        console.log('Generated Token:', token); // Debugging
+        console.log('Generated Token:', token); 
 
        
         const cookieOptions = {
             expires: new Date(
-                Date.now() + (process.env.JWT_COOKIE_EXPIRES || 1) * 24 * 60 * 60 * 1000 // Default 1 day
+                Date.now() + (process.env.JWT_COOKIE_EXPIRES || 1) * 24 * 60 * 60 * 1000 
             ),
             httpOnly: true, 
         };

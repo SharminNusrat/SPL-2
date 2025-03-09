@@ -15,7 +15,6 @@ const createTicket = (req, res) => {
         return res.status(400).json({ error: 'All fields are required.' });
     }
 
-    // Get category name first
     const getCategoryQuery = `
         SELECT name FROM category WHERE id = ?
     `;

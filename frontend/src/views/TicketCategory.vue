@@ -2,7 +2,6 @@
     <div class="container">
       <h2>Category Management</h2>
   
-      <!-- Category List -->
       <div v-if="categories.length">
         <h4>Existing Categories:</h4>
         <ul class="list-group">
@@ -16,7 +15,6 @@
         </ul>
       </div>
   
-      <!-- Add New Category -->
       <div class="mt-4">
         <h4>{{ editing ? "Edit Category" : "Add Category" }}</h4>
         <input v-model="categoryName" class="form-control" placeholder="Enter category name" />
@@ -37,8 +35,8 @@
         categoryName: "",
         editing: false,
         editingId: null,
-        token: localStorage.getItem("accessToken"), // Token Retrieve
-        userRole: localStorage.getItem("userRole"), // Role Retrieve
+        token: localStorage.getItem("accessToken"), 
+        userRole: localStorage.getItem("userRole"), 
       };
     },
     methods: {
@@ -58,10 +56,9 @@
             }
   
           const res = await axios.get("/api/tickets/categories", {
-            headers: { Authorization: `Bearer ${this.token}` }, // Token Send
+            headers: { Authorization: `Bearer ${this.token}` }, 
           });
   
-          // Make sure we're accessing the correct property from the response
           this.categories = res.data.categorie;
         } catch (error) {
           console.error("Error fetching categories:", error);

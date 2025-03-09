@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {register, login, logout, verifyMail, generateRecoveryOTP, resetPassword, getUserById, getProfile, updateProfile, resendVerificationOTP,
-    getAvailability,updateAvailability,getAllTechnicians,getTechnicianById,deactivateTechnician,activateTechnician} = require('../controllers/userController.js');
-//const authenticateToken = require('../middleware/authMiddleware');
+    getAvailability,updateAvailability} = require('../controllers/userController.js');
 const { authenticateToken, isAdmin } = require('../middleware/authMiddleware');
 
 router.post('/register', register);
@@ -14,7 +13,6 @@ router.post('/login', login);
 router.post('/logout', logout);
 router.get('/user/:id', getUserById);
 
-// Authenticated routes
 router.get('/profile', authenticateToken, getProfile);
 router.put('/profile/update', authenticateToken, updateProfile);
 

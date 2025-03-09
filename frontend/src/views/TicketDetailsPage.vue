@@ -46,9 +46,6 @@
             <p>{{ comment.content }}</p> 
             <p><em>{{ formatDate(comment.created_at) }}</em></p> 
 
-
-            <!-- <p>Logged-in User ID: {{ loggedInUserId }} | Comment User ID: {{ comment.user_id }}</p> -->
-
             <div v-if="comment.user_id == loggedInUserId">
               <button @click="editComment(comment)">✏️ Edit</button>
               <button @click="deleteComment(comment.id)">🗑️ Delete</button>
@@ -133,15 +130,11 @@
             }
           });
           const ticketData = await ticketResponse.json();
-          // console.log(ticketData.ticket.user_id);
           if(!ticketResponse.ok) {
             console.error('Error fetching ticket details:', ticketData.error);
             return;
           }
           this.ticketCreatorId = String(ticketData.ticket.user_id);
-          
-          // console.log('Ticket creator id: ' + this.ticketCreatorId);
-
           const response = await fetch(`/api/tickets/files/ticket/${this.ticket.id}`, {
             method: 'GET',
             headers: {
@@ -149,9 +142,7 @@
             }
           });
           const data = await response.json();
-          // console.log('Raw Attachment API Response:', data);
           this.attachments = data.files || [];
-          // console.log("Updated Attachments in Vue:", this.attachments);
         } catch(error) {
           console.log('Error fetching attachments:', error);
           this.attachments = [];
@@ -280,7 +271,7 @@
         }
       },
       async submitComment() {
-        // const ticketId = this.$route.params.id;
+      
         try {
           const token = localStorage.getItem("accessToken");
           const userId = localStorage.getItem('user_id');
@@ -299,13 +290,10 @@
               "Content-Type": "application/json",
               "Authorization": `Bearer ${token}`
             },
-            // body: JSON.stringify({ text: this.newComment })
             body: JSON.stringify(commentData)
           });
   
           const data = await response.json();
-          // console.log('Comment Submission Response:', data);
-
           if(response.ok) {
             this.comments.push({ id: data.comment_id, content: commentText, user_id: userId });
             this.newComment = "";
@@ -414,9 +402,5 @@
   .container {
     max-width: 700px;
   }
-  /* .delete-btn {
-    display: block;
-    margin-top: 5px;
-  } */
   </style>
   
